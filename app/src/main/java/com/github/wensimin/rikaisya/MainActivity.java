@@ -14,9 +14,6 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.android.material.snackbar.Snackbar;
-
 import java.util.Optional;
 
 public class MainActivity extends AppCompatActivity {
@@ -25,12 +22,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        // 顶部bar
         setContentView(R.layout.activity_main);
-//        Toolbar toolbar = findViewById(R.id.toolbar);
-//        setSupportActionBar(toolbar);
-        FloatingActionButton fab = findViewById(R.id.fab);
-        fab.setOnClickListener(view -> Snackbar.make(view, "Replace with your own action", Snackbar.LENGTH_LONG)
-                .setAction("Action", null).show());
+        Toolbar toolbar = findViewById(R.id.toolbar);
+        setSupportActionBar(toolbar);
         // 剪贴板监听
         ClipboardManager clipboardManager = (ClipboardManager)
                 getSystemService(Context.CLIPBOARD_SERVICE);
@@ -44,6 +39,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(MainActivity.this, "获取到的剪切板文字为:" + text, Toast.LENGTH_SHORT).show();
             }
         });
+        // 启动服务
         if (!Settings.canDrawOverlays(this)) {
             Toast.makeText(this, "当前无权限，请授权", Toast.LENGTH_SHORT).show();
             startActivityForResult(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())), 0);
@@ -51,11 +47,30 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, FloatingService.class);
             startService(intent);
         }
-        // TODO 点击监听启动
-//        FirstFragment firstFragment = (FirstFragment) this.getSupportFragmentManager().findFragmentById(R.id.FirstFragment);
-//        firstFragment.getButton().setOnClickListener(b -> {
-//
-//        });
+        Toast.makeText(MainActivity.this, "onCreate", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * 接受服务请求
+     */
+    private void acceptAction() {
+        if (getIntent().getBooleanExtra(FloatingService.ACTION_NAME, false)) {
+            // TODO 进行解析
+            Toast.makeText(MainActivity.this, "rikai!", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    @Override
+    protected void onStart() {
+        Toast.makeText(MainActivity.this, "onStart", Toast.LENGTH_SHORT).show();
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        Toast.makeText(MainActivity.this, "onResume", Toast.LENGTH_SHORT).show();
+        this.acceptAction();
+        super.onResume();
     }
 
     @Override
