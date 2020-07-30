@@ -9,11 +9,19 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.widget.ListView;
 import android.widget.Toast;
 
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.github.wensimin.rikaisya.api.RikaiType;
+import com.github.wensimin.rikaisya.api.RikaiUtils;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
 import java.util.Optional;
 
 public class MainActivity extends AppCompatActivity {
@@ -26,19 +34,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        // 剪贴板监听
-        ClipboardManager clipboardManager = (ClipboardManager)
-                getSystemService(Context.CLIPBOARD_SERVICE);
-        clipboardManager.addPrimaryClipChangedListener(() -> {
-            if (clipboardManager.hasPrimaryClip()) {
-                ClipData clipData = clipboardManager.getPrimaryClip();
-                String text = Optional.ofNullable(clipData)
-                        .map(c -> c.getItemAt(0))
-                        .map(ClipData.Item::getText)
-                        .map(CharSequence::toString).orElse("");
-                Toast.makeText(MainActivity.this, "获取到的剪切板文字为:" + text, Toast.LENGTH_SHORT).show();
-            }
-        });
+        FloatingActionButton button = findViewById(R.id.fab);
+        // 按钮发起理解
+        button.setOnClickListener(b->this.rikai());
         // 启动服务
         if (!Settings.canDrawOverlays(this)) {
             Toast.makeText(this, "当前无权限，请授权", Toast.LENGTH_SHORT).show();
@@ -47,28 +45,45 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, FloatingService.class);
             startService(intent);
         }
-        Toast.makeText(MainActivity.this, "onCreate", Toast.LENGTH_SHORT).show();
+    }
+
+    /**
+     * 进行解析
+     *
+     */
+    private void rikai() {
+        Toast.makeText(MainActivity.this, "rikai!", Toast.LENGTH_SHORT).show();
+        // listView
+        ListView listView = findViewById(R.id.list_view);
+        ClipboardManager clipboardManager = (ClipboardManager)
+                getSystemService(Context.CLIPBOARD_SERVICE);
+        if (clipboardManager.hasPrimaryClip()) {
+            ClipData clipData = clipboardManager.getPrimaryClip();
+            String text = Optional.ofNullable(clipData)
+                    .map(c -> c.getItemAt(0))
+                    .map(ClipData.Item::getText)
+                    .map(CharSequence::toString).orElse("");
+            Map<RikaiType, List<String>> rikai = RikaiUtils.rikai(text);
+            List<Rikai> rikais = new ArrayList<>();
+            rikai.forEach((key, value) -> value.forEach(v -> rikais.add(new Rikai(key, v))));
+            RikaiAdapter adapter = new RikaiAdapter(MainActivity.this, android.R.layout.simple_list_item_1, rikais);
+            listView.setAdapter(adapter);
+        }
     }
 
     /**
      * 接受服务请求
      */
     private void acceptAction() {
+        // 判断是否是服务按钮发起的理解
         if (getIntent().getBooleanExtra(FloatingService.ACTION_NAME, false)) {
-            // TODO 进行解析
-            Toast.makeText(MainActivity.this, "rikai!", Toast.LENGTH_SHORT).show();
+            // 解析操作
+            this.rikai();
         }
     }
 
     @Override
-    protected void onStart() {
-        Toast.makeText(MainActivity.this, "onStart", Toast.LENGTH_SHORT).show();
-        super.onStart();
-    }
-
-    @Override
     protected void onResume() {
-        Toast.makeText(MainActivity.this, "onResume", Toast.LENGTH_SHORT).show();
         this.acceptAction();
         super.onResume();
     }

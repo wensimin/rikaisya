@@ -1,23 +1,15 @@
 package com.github.wensimin.rikaisya;
 
-import android.annotation.SuppressLint;
-import android.app.Activity;
 import android.app.Service;
 import android.content.ClipboardManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.IBinder;
 import android.view.WindowManager;
 import android.widget.ImageButton;
-import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-
-import com.github.wensimin.rikaisya.utils.SystemUtils;
-
-import java.util.Objects;
 
 /**
  * 浮动窗服务
@@ -35,9 +27,9 @@ public class FloatingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        // 剪贴板变动时创建按钮6
         ClipboardManager clipboardManager = (ClipboardManager)
                 getSystemService(Context.CLIPBOARD_SERVICE);
+        // 剪贴板变动时创建按钮
         clipboardManager.addPrimaryClipChangedListener(this::dialogButton);
         return super.onStartCommand(intent, flags, startId);
     }
@@ -56,12 +48,11 @@ public class FloatingService extends Service {
         // fixme hardcode
         layoutParams.x = 300;
         layoutParams.y = 500;
-        layoutParams.width = 100;
-        layoutParams.height = 100;
+        layoutParams.width = 150;
+        layoutParams.height = 150;
         ImageButton button = new ImageButton(this);
         button.setImageResource(android.R.drawable.ic_menu_search);
         button.setOnClickListener(b -> {
-//            SystemUtils.setTopApp(this);
             Intent intent = new Intent(getBaseContext(), MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra(ACTION_NAME, true);
