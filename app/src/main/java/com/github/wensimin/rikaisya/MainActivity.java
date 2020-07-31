@@ -36,7 +36,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         FloatingActionButton button = findViewById(R.id.fab);
         // 按钮发起理解
-        button.setOnClickListener(b->this.rikai());
+        button.setOnClickListener(b -> this.rikai());
         // 启动服务
         if (!Settings.canDrawOverlays(this)) {
             Toast.makeText(this, "当前无权限，请授权", Toast.LENGTH_SHORT).show();
@@ -49,7 +49,6 @@ public class MainActivity extends AppCompatActivity {
 
     /**
      * 进行解析
-     *
      */
     private void rikai() {
         Toast.makeText(MainActivity.this, "rikai!", Toast.LENGTH_SHORT).show();
@@ -76,6 +75,12 @@ public class MainActivity extends AppCompatActivity {
     protected void onNewIntent(Intent intent) {
         super.onNewIntent(intent);
         acceptAction(intent);
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        acceptAction(this.getIntent());
     }
 
     /**

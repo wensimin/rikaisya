@@ -33,8 +33,8 @@ dependencies {
     implementation 'androidx.constraintlayout:constraintlayout:1.1.3'
     implementation 'androidx.navigation:navigation-fragment:2.3.0'
     implementation 'androidx.navigation:navigation-ui:2.3.0'
-    // TODO 使用中心库包
-    implementation files('../lib/rikaisya.api-1.0-SNAPSHOT.jar')
+    // 理解api
+    implementation 'com.github.wensimin:rikaisya.api:1.0'
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'

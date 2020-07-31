@@ -55,17 +55,29 @@ public class FloatingService extends Service {
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
         View floatView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.float_btn, new FrameLayout(getApplicationContext()), false);
         floatView.setOnClickListener(view -> {
-            windowManager.removeView(floatView);
+            this.deleteFloatView(view, 100);
             Intent intent = new Intent(getBaseContext(), MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra(ACTION_NAME, true);
             getApplication().startActivity(intent);
         });
         windowManager.addView(floatView, layoutParams);
+        this.deleteFloatView(floatView, 5 * 1000);
+    }
+
+    /**
+     * 删除floatView
+     *
+     * @param floatView floatView
+     * @param time      time ms
+     */
+    private void deleteFloatView(View floatView, int time) {
+        WindowManager windowManager = (WindowManager) getApplicationContext().getSystemService(Service.WINDOW_SERVICE);
         mDelayHandler.postDelayed(() -> {
-            if (floatView.getParent() != null)
+            if (floatView.getParent() != null) {
                 windowManager.removeView(floatView);
-        }, 5 * 1000);
+            }
+        }, time);
     }
 
 
