@@ -71,22 +71,24 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+
+    @Override
+    protected void onNewIntent(Intent intent) {
+        super.onNewIntent(intent);
+        acceptAction(intent);
+    }
+
     /**
      * 接受服务请求
      */
-    private void acceptAction() {
+    private void acceptAction(Intent intent) {
         // 判断是否是服务按钮发起的理解
-        if (getIntent().getBooleanExtra(FloatingService.ACTION_NAME, false)) {
+        if (intent.getBooleanExtra(FloatingService.ACTION_NAME, false)) {
             // 解析操作
             this.rikai();
         }
     }
 
-    @Override
-    protected void onResume() {
-        this.acceptAction();
-        super.onResume();
-    }
 
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
