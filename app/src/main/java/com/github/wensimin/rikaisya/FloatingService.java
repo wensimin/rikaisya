@@ -1,6 +1,5 @@
 package com.github.wensimin.rikaisya;
 
-import android.annotation.SuppressLint;
 import android.app.Service;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -9,10 +8,10 @@ import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
@@ -50,13 +49,11 @@ public class FloatingService extends Service {
         layoutParams.format = PixelFormat.TRANSLUCENT;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;//不耽误其他事件
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-        // fixme hardcode
         layoutParams.x = 300;
         layoutParams.y = 500;
         layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-        @SuppressLint("InflateParams")
-        View floatView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.float_btn, null);
+        View floatView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.float_btn, new FrameLayout(getApplicationContext()), false);
         floatView.setOnClickListener(view -> {
             windowManager.removeView(floatView);
             Intent intent = new Intent(getBaseContext(), MainActivity.class);
@@ -66,7 +63,7 @@ public class FloatingService extends Service {
         });
         windowManager.addView(floatView, layoutParams);
         mDelayHandler.postDelayed(() -> {
-            if(floatView.getParent() != null )
+            if (floatView.getParent() != null)
                 windowManager.removeView(floatView);
         }, 5 * 1000);
     }

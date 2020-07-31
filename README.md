@@ -5,6 +5,4 @@ android 剪贴板内容分析器
 
 TODO
 依赖包替换中心库版本
-ui调整
-hardcode
 
