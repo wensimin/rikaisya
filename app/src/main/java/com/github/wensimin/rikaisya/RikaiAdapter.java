@@ -16,6 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.github.wensimin.rikaisya.api.Rikai;
 import com.github.wensimin.rikaisya.api.RikaiType;
 
 import java.util.List;
@@ -56,20 +57,30 @@ public class RikaiAdapter extends ArrayAdapter<Rikai> {
             textView.setOnClickListener(copyListener);
             Button button = rowView.findViewById(R.id.rikai_button);
             textView.setText(rikai.getText());
-            if (rikai.getType() == RikaiType.code) {
-                button.setText("复制");
-                button.setOnClickListener(copyListener);
-            } else {
-                button.setText("打开");
-                button.setOnClickListener(b -> {
-                    String url = rikai.getText();
-                    if (rikai.getType() == RikaiType.bilibili) {
-                        url = "https://www.bilibili.com/video/" + url;
-                    } else if (rikai.getType() == RikaiType.ip) {
-                        url = "https://" + url;
-                    }
-                    this.openUrl(url);
-                });
+            switch (rikai.getType()) {
+                case code:
+                    button.setText("复制");
+                    button.setOnClickListener(copyListener);
+                    break;
+                case base64:
+                    button.setText("解析");
+                    button.setOnClickListener(view -> {
+                        ClipData clipData = ClipData.newPlainText(rikai.getRikaiText(), rikai.getRikaiText());
+                        clipboardManager.setPrimaryClip(clipData);
+                        Toast.makeText(context, "已复制:" + rikai.getRikaiText(), Toast.LENGTH_SHORT).show();
+                    });
+                    break;
+                default:
+                    button.setText("打开");
+                    button.setOnClickListener(b -> {
+                        String url = rikai.getText();
+                        if (rikai.getType() == RikaiType.bilibili) {
+                            url = "https://www.bilibili.com/video/" + url;
+                        } else if (rikai.getType() == RikaiType.ip) {
+                            url = "https://" + url;
+                        }
+                        this.openUrl(url);
+                    });
             }
             return rowView;
         }

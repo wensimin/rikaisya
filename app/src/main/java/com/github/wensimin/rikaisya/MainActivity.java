@@ -15,14 +15,13 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
-import com.github.wensimin.rikaisya.api.RikaiType;
+import com.github.wensimin.rikaisya.api.Rikai;
 import com.github.wensimin.rikaisya.api.RikaiUtils;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 public class MainActivity extends AppCompatActivity {
 
@@ -62,10 +61,8 @@ public class MainActivity extends AppCompatActivity {
                     .map(c -> c.getItemAt(0))
                     .map(ClipData.Item::getText)
                     .map(CharSequence::toString).orElse("");
-            Map<RikaiType, List<String>> rikai = RikaiUtils.rikai(text);
-            List<Rikai> rikais = new ArrayList<>();
-            rikai.forEach((key, value) -> value.forEach(v -> rikais.add(new Rikai(key, v))));
-            RikaiAdapter adapter = new RikaiAdapter(MainActivity.this, android.R.layout.simple_list_item_1, rikais);
+            Set<Rikai> rikais = RikaiUtils.rikai(text);
+            RikaiAdapter adapter = new RikaiAdapter(MainActivity.this, android.R.layout.simple_list_item_1, new ArrayList<>(rikais));
             listView.setAdapter(adapter);
         }
     }
