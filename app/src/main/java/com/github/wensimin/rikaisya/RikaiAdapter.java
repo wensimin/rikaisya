@@ -48,11 +48,10 @@ public class RikaiAdapter extends ArrayAdapter<Rikai> {
                     .getSystemService(Context.LAYOUT_INFLATER_SERVICE);
             View rowView = inflater.inflate(R.layout.rikai_item, parent, false);
             TextView textView = rowView.findViewById(R.id.rikai_text);
-            // 文本行复制 监听
             View.OnClickListener copyListener = view -> {
-                ClipData clipData = ClipData.newPlainText(textView.getText(), textView.getText());
+                ClipData clipData = ClipData.newPlainText(rikai.getText(), rikai.getText());
                 clipboardManager.setPrimaryClip(clipData);
-                Toast.makeText(context, "已复制:" + textView.getText(), Toast.LENGTH_SHORT).show();
+                Toast.makeText(context, "已复制:" + rikai.getText(), Toast.LENGTH_SHORT).show();
             };
             textView.setOnClickListener(copyListener);
             Button button = rowView.findViewById(R.id.rikai_button);
@@ -64,6 +63,14 @@ public class RikaiAdapter extends ArrayAdapter<Rikai> {
                     break;
                 case base64:
                     button.setText("解析");
+                    button.setOnClickListener(view -> {
+                        ClipData clipData = ClipData.newPlainText(rikai.getRikaiText(), rikai.getRikaiText());
+                        clipboardManager.setPrimaryClip(clipData);
+                        Toast.makeText(context, "已复制:" + rikai.getRikaiText(), Toast.LENGTH_SHORT).show();
+                    });
+                    break;
+                case tag:
+                    button.setText("提取");
                     button.setOnClickListener(view -> {
                         ClipData clipData = ClipData.newPlainText(rikai.getRikaiText(), rikai.getRikaiText());
                         clipboardManager.setPrimaryClip(clipData);
