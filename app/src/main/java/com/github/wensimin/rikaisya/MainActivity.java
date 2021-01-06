@@ -82,7 +82,7 @@ public class MainActivity extends AppCompatActivity {
      */
     private void acceptAction(Intent intent) {
         // 判断是否是服务按钮发起的理解
-        if (intent.getBooleanExtra(FloatingService.ACTION_NAME, false)) {
+        if (intent.getBooleanExtra(RikaiFloatingService.ACTION_NAME, false)) {
             // 解析操作
             this.rikai();
         }
@@ -97,7 +97,7 @@ public class MainActivity extends AppCompatActivity {
                 Toast.makeText(this, "授权失败", Toast.LENGTH_SHORT).show();
             } else {
                 Toast.makeText(this, "授权成功", Toast.LENGTH_SHORT).show();
-                startService(new Intent(MainActivity.this, FloatingService.class));
+                startService(new Intent(MainActivity.this, RikaiFloatingService.class));
             }
         }
     }
