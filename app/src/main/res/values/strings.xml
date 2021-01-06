@@ -1,5 +1,6 @@
 <resources>
     <string name="app_name">Rikaisya</string>
+    <string name="rikai_quick">监听剪贴板</string>
     <string name="action_settings">Settings</string>
     <!-- Strings used for fragments for navigation -->
     <string name="first_fragment_label">First Fragment</string>

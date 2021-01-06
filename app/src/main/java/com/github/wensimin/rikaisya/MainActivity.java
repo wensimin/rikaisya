@@ -36,13 +36,10 @@ public class MainActivity extends AppCompatActivity {
         FloatingActionButton button = findViewById(R.id.fab);
         // 按钮发起理解
         button.setOnClickListener(b -> this.rikai());
-        // 启动服务
+        // 服务权限
         if (!Settings.canDrawOverlays(this)) {
             Toast.makeText(this, "当前无权限，请授权", Toast.LENGTH_SHORT).show();
             startActivityForResult(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())), 0);
-        } else {
-            Intent intent = new Intent(MainActivity.this, FloatingService.class);
-            startService(intent);
         }
     }
 

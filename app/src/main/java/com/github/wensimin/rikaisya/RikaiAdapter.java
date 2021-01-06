@@ -25,7 +25,7 @@ import java.util.List;
  * 理解适配器
  */
 public class RikaiAdapter extends ArrayAdapter<Rikai> {
-    private ClipboardManager clipboardManager;
+    private final ClipboardManager clipboardManager;
     private final Context context;
 
     public RikaiAdapter(@NonNull Context context, int resource, @NonNull List<Rikai> objects) {

@@ -19,8 +19,9 @@ import androidx.annotation.Nullable;
  * 浮动窗服务
  */
 public class FloatingService extends Service {
-    private Handler mDelayHandler = new Handler(Looper.getMainLooper());
+    private final Handler mDelayHandler = new Handler(Looper.getMainLooper());
     public static final String ACTION_NAME = "RIKAI";
+    private final ClipboardManager.OnPrimaryClipChangedListener listener = this::dialogButton;
 
     @Nullable
     @Override
@@ -31,10 +32,10 @@ public class FloatingService extends Service {
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
+        // 剪贴板变动时创建按钮
         ClipboardManager clipboardManager = (ClipboardManager)
                 getSystemService(Context.CLIPBOARD_SERVICE);
-        // 剪贴板变动时创建按钮
-        clipboardManager.addPrimaryClipChangedListener(this::dialogButton);
+        clipboardManager.addPrimaryClipChangedListener(listener);
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -83,7 +84,11 @@ public class FloatingService extends Service {
 
     @Override
     public void onDestroy() {
+        ClipboardManager clipboardManager = (ClipboardManager)
+                getSystemService(Context.CLIPBOARD_SERVICE);
+        clipboardManager.removePrimaryClipChangedListener(listener);
         mDelayHandler.removeCallbacksAndMessages(null);
         super.onDestroy();
     }
+
 }
