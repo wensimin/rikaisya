@@ -8,7 +8,6 @@ import android.graphics.PixelFormat;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
@@ -53,13 +52,12 @@ public class RikaiFloatingService extends Service {
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         layoutParams.format = PixelFormat.TRANSLUCENT;
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;//不耽误其他事件
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
         layoutParams.x = 300;
         layoutParams.y = 500;
         layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-        View floatView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.float_btn, new FrameLayout(getApplicationContext()), false);
+        View floatView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.rikai_btn, new FrameLayout(getApplicationContext()), false);
         floatView.setOnClickListener(view -> {
             this.deleteFloatView(floatView, 100);
             Intent intent = new Intent(getBaseContext(), MainActivity.class);
@@ -79,7 +77,7 @@ public class RikaiFloatingService extends Service {
      * @param time      time ms
      */
     private void deleteFloatView(View floatView, int time) {
-        WindowManager windowManager = (WindowManager) getApplicationContext().getSystemService(Service.WINDOW_SERVICE);
+        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mDelayHandler.postDelayed(() -> {
             if (floatView.getWindowToken() != null) {
                 windowManager.removeView(floatView);
