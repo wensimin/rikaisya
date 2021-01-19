@@ -59,7 +59,7 @@ public class RikaiFloatingService extends Service {
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
         View floatView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.rikai_btn, new FrameLayout(getApplicationContext()), false);
         floatView.setOnClickListener(view -> {
-            this.deleteFloatView(floatView, 100);
+            this.deleteFloatView(floatView, 0);
             Intent intent = new Intent(getBaseContext(), MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra(ACTION_NAME, true);
@@ -79,7 +79,7 @@ public class RikaiFloatingService extends Service {
     private void deleteFloatView(View floatView, int time) {
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mDelayHandler.postDelayed(() -> {
-            if (floatView.getWindowToken() != null) {
+            if (floatView.isShown()) {
                 windowManager.removeView(floatView);
                 isFloating = false;
             }

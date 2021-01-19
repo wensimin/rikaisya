@@ -3,6 +3,7 @@ package com.github.wensimin.rikaisya;
 import android.content.Intent;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
+import android.view.WindowManager;
 
 /**
  * quick setting service
@@ -51,5 +52,11 @@ public class RikaiSettingService extends TileService {
         } else {
             stopService(new Intent(this, RikaiFloatingService.class));
         }
+    }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        stopService(new Intent(this, RikaiFloatingService.class));
     }
 }

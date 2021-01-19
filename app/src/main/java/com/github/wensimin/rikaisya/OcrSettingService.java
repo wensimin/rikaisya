@@ -3,17 +3,24 @@ package com.github.wensimin.rikaisya;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.os.Handler;
 import android.os.IBinder;
 import android.service.quicksettings.Tile;
 import android.service.quicksettings.TileService;
+import android.util.Log;
+import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import static android.content.ContentValues.TAG;
+
 /**
  * ocr 快速设置服务
  */
+//TODO 整理代码
 public class OcrSettingService extends TileService {
     private View floatView;
     private WindowManager.LayoutParams layoutParams;
@@ -23,16 +30,59 @@ public class OcrSettingService extends TileService {
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         // 设置LayoutParam
         layoutParams = new WindowManager.LayoutParams();
+        floatView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.ocr_btn, new FrameLayout(getApplicationContext()), false);
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         layoutParams.format = PixelFormat.TRANSLUCENT;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-        // TODO 初始显示居中，持久化用户拖动过的位置
-        layoutParams.x = 300;
-        layoutParams.y = 500;
+        // 初始显示居中
+        layoutParams.gravity = Gravity.START | Gravity.TOP;
+        Point point = new Point();
+        windowManager.getDefaultDisplay().getSize(point);
+        layoutParams.x = point.x / 2 - floatView.getWidth() / 2;
+        layoutParams.y = point.y / 2 - floatView.getHeight() / 2 - 25;
         layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-        floatView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.ocr_btn, new FrameLayout(getApplicationContext()), false);
+        final Handler handler = new Handler();
+        // 长按事件
+        Runnable longPressEvent = () -> Log.d(TAG, "Long press!");
+        // 拖动事件
+        floatView.setOnTouchListener(new View.OnTouchListener() {
+            private int oldX;
+            private int oldY;
+
+            @Override
+            public boolean onTouch(View view, MotionEvent event) {
+
+                switch (event.getAction() & MotionEvent.ACTION_MASK) {
+                    case MotionEvent.ACTION_DOWN:
+                        oldX = (int) event.getRawX();
+                        oldY = (int) event.getRawY();
+                        handler.postDelayed(longPressEvent, 1000);
+                        break;
+                    case MotionEvent.ACTION_UP:
+                        boolean isClick = Math.abs(oldX - event.getRawX()) <= 10 && Math.abs(oldY - event.getRawY()) <= 10;
+                        handler.removeCallbacks(longPressEvent);
+                        if (isClick) {
+                            view.performClick();
+                            break;
+                        }
+                    default:
+                        Log.d(TAG, "on touch");
+                        layoutParams.x = (int) event.getRawX() - floatView.getWidth() / 2;
+                        layoutParams.y = (int) event.getRawY() - floatView.getHeight() / 2 - 25;
+                        windowManager.updateViewLayout(floatView, layoutParams);
+                }
+                return true;
+            }
+        });
+        // 单击事件
+        floatView.setOnClickListener(view -> {
+            Log.d(TAG, "on click");
+        });
+        floatView.setLongClickable(true);
         return super.onBind(intent);
+
+
     }
 
     @Override
@@ -76,13 +126,14 @@ public class OcrSettingService extends TileService {
         int state = tile.getState();
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         if (state == Tile.STATE_ACTIVE) {
-            if (floatView.getWindowToken() == null) {
+            if (!floatView.isShown()) {
                 windowManager.addView(floatView, layoutParams);
             }
         } else if (state == Tile.STATE_INACTIVE) {
-            if (floatView.getWindowToken() != null) {
+            if (floatView.isShown()) {
                 windowManager.removeView(floatView);
             }
         }
     }
+
 }
