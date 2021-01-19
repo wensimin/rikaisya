@@ -23,10 +23,11 @@
         </activity>
 
         <service
-            android:name=".RikaiFloatingService"
+            android:name=".service.RikaiFloatingService"
             android:exported="false" />
+        <service android:name=".service.OCRFloatingService" />
         <service
-            android:name=".RikaiSettingService"
+            android:name=".service.RikaiSettingService"
             android:icon="@drawable/quick_setting"
             android:label="@string/rikai_quick"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
@@ -35,8 +36,8 @@
             </intent-filter>
         </service>
         <service
-            android:name=".OcrSettingService"
-            android:icon="@drawable/quick_setting"
+            android:name=".service.OCRSettingService"
+            android:icon="@drawable/ocr_setting"
             android:label="@string/ocr_quick"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
             <intent-filter>

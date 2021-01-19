@@ -17,6 +17,7 @@ import androidx.appcompat.widget.Toolbar;
 
 import com.github.wensimin.rikaisya.api.Rikai;
 import com.github.wensimin.rikaisya.api.RikaiUtils;
+import com.github.wensimin.rikaisya.service.RikaiFloatingService;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;

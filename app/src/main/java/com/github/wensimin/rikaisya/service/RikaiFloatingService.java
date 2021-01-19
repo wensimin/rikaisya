@@ -1,4 +1,4 @@
-package com.github.wensimin.rikaisya;
+package com.github.wensimin.rikaisya.service;
 
 import android.app.Service;
 import android.content.ClipboardManager;
@@ -14,6 +14,9 @@ import android.view.WindowManager;
 import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
+
+import com.github.wensimin.rikaisya.MainActivity;
+import com.github.wensimin.rikaisya.R;
 
 /**
  * 浮动窗服务

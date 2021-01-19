@@ -1,12 +1,11 @@
-package com.github.wensimin.rikaisya;
+package com.github.wensimin.rikaisya.service;
 
+import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
 import android.os.Handler;
 import android.os.IBinder;
-import android.service.quicksettings.Tile;
-import android.service.quicksettings.TileService;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -15,18 +14,29 @@ import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
+import androidx.annotation.Nullable;
+
+import com.github.wensimin.rikaisya.R;
+
 import static android.content.ContentValues.TAG;
 
 /**
- * ocr 快速设置服务
+ * ocr service
  */
 //TODO 整理代码
-public class OcrSettingService extends TileService {
+public class OCRFloatingService extends Service {
+
     private View floatView;
     private WindowManager.LayoutParams layoutParams;
 
+    @Nullable
     @Override
     public IBinder onBind(Intent intent) {
+        return null;
+    }
+
+    @Override
+    public void onCreate() {
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         // 设置LayoutParam
         layoutParams = new WindowManager.LayoutParams();
@@ -34,12 +44,12 @@ public class OcrSettingService extends TileService {
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         layoutParams.format = PixelFormat.TRANSLUCENT;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
-        // 初始显示居中
+        // 初始显示居中 TODO 持久化用户移动后位置
         layoutParams.gravity = Gravity.START | Gravity.TOP;
         Point point = new Point();
         windowManager.getDefaultDisplay().getSize(point);
         layoutParams.x = point.x / 2 - floatView.getWidth() / 2;
-        layoutParams.y = point.y / 2 - floatView.getHeight() / 2 - 25;
+        layoutParams.y = point.y / 2 - floatView.getHeight() / 4;
         layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
         final Handler handler = new Handler();
@@ -68,6 +78,7 @@ public class OcrSettingService extends TileService {
                         }
                     default:
                         Log.d(TAG, "on touch");
+                        handler.removeCallbacks(longPressEvent);
                         layoutParams.x = (int) event.getRawX() - floatView.getWidth() / 2;
                         layoutParams.y = (int) event.getRawY() - floatView.getHeight() / 2 - 25;
                         windowManager.updateViewLayout(floatView, layoutParams);
@@ -79,61 +90,25 @@ public class OcrSettingService extends TileService {
         floatView.setOnClickListener(view -> {
             Log.d(TAG, "on click");
         });
-        floatView.setLongClickable(true);
-        return super.onBind(intent);
-
-
+        super.onCreate();
     }
 
     @Override
-    public void onTileAdded() {
-        // TODO 进行是否账号设置完成，未完成则使用未启用状态
-        super.onTileAdded();
-        Tile tile = getQsTile();
-        tile.setState(Tile.STATE_INACTIVE);
-        refresh();
-    }
-
-    @Override
-    public void onClick() {
-        super.onClick();
-        // 关闭状态栏
-        Intent it = new Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS);
-        getApplicationContext().sendBroadcast(it);
-        Tile tile = getQsTile();
-        // 反转状态
-        int state = tile.getState() == Tile.STATE_ACTIVE ? Tile.STATE_INACTIVE : Tile.STATE_ACTIVE;
-        tile.setState(state);
-        refresh();
-    }
-
-    @Override
-    public void onStartListening() {
-        super.onStartListening();
-        this.refresh();
-    }
-
-
-    @Override
-    public void onStopListening() {
-        super.onStopListening();
-        this.refresh();
-    }
-
-    private void refresh() {
-        Tile tile = getQsTile();
-        tile.updateTile();
-        int state = tile.getState();
+    public int onStartCommand(Intent intent, int flags, int startId) {
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        if (state == Tile.STATE_ACTIVE) {
-            if (!floatView.isShown()) {
-                windowManager.addView(floatView, layoutParams);
-            }
-        } else if (state == Tile.STATE_INACTIVE) {
-            if (floatView.isShown()) {
-                windowManager.removeView(floatView);
-            }
+        if (!floatView.isShown()) {
+            windowManager.addView(floatView, layoutParams);
         }
+        return super.onStartCommand(intent, flags, startId);
     }
 
+
+    @Override
+    public void onDestroy() {
+        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        if (floatView.isShown()) {
+            windowManager.removeView(floatView);
+        }
+        super.onDestroy();
+    }
 }
