@@ -2,13 +2,17 @@
     <string name="app_name">Rikaisya</string>
     <string name="rikai_quick">监听剪贴板</string>
     <string name="ocr_quick">ocr</string>
-    <string name="action_settings">Settings</string>
-    <!-- Strings used for fragments for navigation -->
-    <string name="first_fragment_label">First Fragment</string>
-    <string name="second_fragment_label">Second Fragment</string>
-    <string name="next">Next</string>
-    <string name="previous">Previous</string>
+    <string name="action_settings">ocr设置</string>
+    <string name="title_activity_OCRSettings">OCR 设置</string>
 
-    <string name="hello_first_fragment">Hello first fragment</string>
-    <string name="hello_second_fragment">Hello second fragment. Arg: %1$s</string>
+    <string name="OCR_config_header">OCR相关配置</string>
+    <string name="translate_config_header">翻译相关配置</string>
+
+    <string name="baidu_OCR_config_title_API">百度OCR API key</string>
+    <string name="baidu_OCR_config_title_Secret">百度OCR secret key</string>
+
+    <string name="tencent_translate_id">腾讯翻译 API id</string>
+    <string name="tencent_translate_key">腾讯翻译 API key</string>
+
+
 </resources>

@@ -1,0 +1,28 @@
+<PreferenceScreen xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <PreferenceCategory app:title="@string/OCR_config_header">
+
+        <EditTextPreference
+            app:key="@string/baidu_OCR_config_title_API"
+            app:title="@string/baidu_OCR_config_title_API"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="@string/baidu_OCR_config_title_Secret"
+            app:title="@string/baidu_OCR_config_title_Secret"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+
+    <PreferenceCategory app:title="@string/translate_config_header">
+
+        <EditTextPreference
+            app:key="@string/tencent_translate_id"
+            app:title="@string/tencent_translate_id"
+            app:useSimpleSummaryProvider="true" />
+        <EditTextPreference
+            app:key="@string/tencent_translate_key"
+            app:title="@string/tencent_translate_key"
+            app:useSimpleSummaryProvider="true" />
+
+    </PreferenceCategory>
+</PreferenceScreen>

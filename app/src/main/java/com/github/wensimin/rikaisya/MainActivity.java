@@ -106,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         // Inflate the menu; this adds items to the action bar if it is present.
-        getMenuInflater().inflate(R.menu.menu_main, menu);
+        getMenuInflater().inflate(R.menu.setting_btn, menu);
         return true;
     }
 
@@ -123,5 +123,11 @@ public class MainActivity extends AppCompatActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+
+    public void openOCRSetting(MenuItem item) {
+        Intent intent = new Intent(this, OCRSettingsActivity.class);
+        startActivity(intent);
     }
 }
