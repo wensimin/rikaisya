@@ -31,7 +31,7 @@
             android:exported="false" />
         <service android:name=".service.OCRFloatingService" />
         <service
-            android:name=".service.RikaiQuickSettingService"
+            android:name=".service.RikaiTile"
             android:icon="@drawable/quick_setting"
             android:label="@string/rikai_quick"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
@@ -40,7 +40,7 @@
             </intent-filter>
         </service>
         <service
-            android:name=".service.OCRQuickSettingService"
+            android:name=".service.OCRTile"
             android:icon="@drawable/ocr_setting"
             android:label="@string/ocr_quick"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">

@@ -7,7 +7,7 @@ import android.service.quicksettings.TileService;
 /**
  * ocr 快速设置服务
  */
-public class OCRQuickSettingService extends TileService {
+public class OCRTile extends TileService {
 
     @Override
     public void onTileAdded() {

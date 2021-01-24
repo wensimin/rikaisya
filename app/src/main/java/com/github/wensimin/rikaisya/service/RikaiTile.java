@@ -7,7 +7,7 @@ import android.service.quicksettings.TileService;
 /**
  * quick setting service
  */
-public class RikaiQuickSettingService extends TileService {
+public class RikaiTile extends TileService {
 
     @Override
     public void onTileAdded() {

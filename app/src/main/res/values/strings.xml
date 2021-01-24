@@ -3,7 +3,7 @@
     <string name="rikai_quick">监听剪贴板</string>
     <string name="ocr_quick">ocr</string>
     <string name="action_settings">ocr设置</string>
-    <string name="title_activity_OCRSettings">OCR 设置</string>
+    <string name="title_activity_OCRSettings">OCR 与翻译 设置</string>
 
     <string name="OCR_config_header">OCR相关配置</string>
     <string name="translate_config_header">翻译相关配置</string>

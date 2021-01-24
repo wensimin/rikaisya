@@ -1,7 +1,6 @@
 package com.github.wensimin.rikaisya.service;
 
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
@@ -20,6 +19,7 @@ import android.widget.FrameLayout;
 import androidx.annotation.Nullable;
 
 import com.github.wensimin.rikaisya.R;
+import com.github.wensimin.rikaisya.view.CaptureView;
 
 import static android.content.ContentValues.TAG;
 
@@ -65,8 +65,22 @@ public class OCRFloatingService extends Service {
                 // 长按事件
                 () -> Log.d(TAG, "Long press!")));
         // 单击事件
-        floatView.setOnClickListener(view -> Log.d(TAG, "on click"));
+        floatView.setOnClickListener(this::startCapture);
         super.onCreate();
+    }
+
+    /**
+     * 开始进行屏幕截图
+     *
+     * @param view ocr按钮view
+     */
+    private void startCapture(View view) {
+        View captureView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.capture, new FrameLayout(getApplicationContext()), false);
+        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        layoutParams = new WindowManager.LayoutParams();
+        layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        layoutParams.format = PixelFormat.TRANSLUCENT;
+        windowManager.addView(captureView, layoutParams);
     }
 
     @Override
@@ -101,17 +115,22 @@ public class OCRFloatingService extends Service {
         private final Handler handler = new Handler();
         // 长按事件
         private final Runnable longPressEvent;
+        // 已经长按
+        private boolean longClicked = false;
 
         OCRTouchListener(WindowManager windowManager, Runnable longPressEvent) {
             this.windowManager = windowManager;
-            this.longPressEvent = longPressEvent;
+            this.longPressEvent = () -> {
+                longPressEvent.run();
+                longClicked = true;
+            };
         }
 
         @Override
         public boolean onTouch(View view, MotionEvent event) {
-
             switch (event.getAction() & MotionEvent.ACTION_MASK) {
                 case MotionEvent.ACTION_DOWN:
+                    longClicked = false;
                     oldX = (int) event.getRawX();
                     oldY = (int) event.getRawY();
                     handler.postDelayed(longPressEvent, 1000);
@@ -119,16 +138,16 @@ public class OCRFloatingService extends Service {
                 case MotionEvent.ACTION_UP:
                     boolean isClick = Math.abs(oldX - event.getRawX()) <= 10 && Math.abs(oldY - event.getRawY()) <= 10;
                     handler.removeCallbacks(longPressEvent);
-                    if (isClick) {
+                    if (isClick && !longClicked) {
                         view.performClick();
-                        break;
                     }
                     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.putInt(CURRENT_X_KEY, layoutParams.x);
                     editor.putInt(CURRENT_Y_KEY, layoutParams.y);
                     editor.apply();
-                default:
+                    break;
+                case MotionEvent.ACTION_MOVE:
                     Log.d(TAG, "on touch");
                     handler.removeCallbacks(longPressEvent);
                     layoutParams.x = (int) event.getRawX() - floatView.getWidth() / 2;

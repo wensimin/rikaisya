@@ -51,7 +51,7 @@ public class OCRSettingsActivity extends AppCompatActivity {
     }
 
     /**
-     * 保存和存储设置
+     * 保存和验证设置
      */
     private void checkAndSaveConfig() {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
