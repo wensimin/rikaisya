@@ -19,7 +19,6 @@ import android.widget.FrameLayout;
 import androidx.annotation.Nullable;
 
 import com.github.wensimin.rikaisya.R;
-import com.github.wensimin.rikaisya.view.CaptureView;
 
 import static android.content.ContentValues.TAG;
 
@@ -54,8 +53,8 @@ public class OCRFloatingService extends Service {
         windowManager.getDefaultDisplay().getSize(point);
         int defaultX = point.x / 2 - floatView.getWidth() / 2;
         int defaultY = point.y / 2 - floatView.getHeight() / 4;
-        int x = preferences.getInt(OCRTouchListener.CURRENT_X_KEY, defaultX);
-        int y = preferences.getInt(OCRTouchListener.CURRENT_Y_KEY, defaultY);
+        int x = preferences.getInt(OCRTouchListener.OCR_X_KEY, defaultX);
+        int y = preferences.getInt(OCRTouchListener.OCR_Y_KEY, defaultY);
         layoutParams.x = x;
         layoutParams.y = y;
         layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
@@ -109,8 +108,8 @@ public class OCRFloatingService extends Service {
     private class OCRTouchListener implements View.OnTouchListener {
         private int oldX;
         private int oldY;
-        public static final String CURRENT_X_KEY = "current_x";
-        public static final String CURRENT_Y_KEY = "current_y";
+        public static final String OCR_X_KEY = "OCR_X_KEY";
+        public static final String OCR_Y_KEY = "OCR_Y_KEY";
         private final WindowManager windowManager;
         private final Handler handler = new Handler();
         // 长按事件
@@ -143,8 +142,8 @@ public class OCRFloatingService extends Service {
                     }
                     SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
                     SharedPreferences.Editor editor = preferences.edit();
-                    editor.putInt(CURRENT_X_KEY, layoutParams.x);
-                    editor.putInt(CURRENT_Y_KEY, layoutParams.y);
+                    editor.putInt(OCR_X_KEY, layoutParams.x);
+                    editor.putInt(OCR_Y_KEY, layoutParams.y);
                     editor.apply();
                     break;
                 case MotionEvent.ACTION_MOVE:
