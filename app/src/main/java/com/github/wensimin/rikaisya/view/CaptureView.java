@@ -5,6 +5,7 @@ import android.content.SharedPreferences;
 import android.graphics.Canvas;
 import android.graphics.Color;
 import android.graphics.Paint;
+import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
@@ -47,7 +48,10 @@ public class CaptureView extends View {
     private boolean changeTop = false;
     private boolean changeBottom = false;
     private Drawable confirm;
+    private Rect confirmRect;
     private Drawable cancel;
+    private Rect cancelRect;
+
 
     public CaptureView(Context context) {
         super(context);
@@ -78,6 +82,8 @@ public class CaptureView extends View {
         bottom = preferences.getFloat(CAP_BOTTOM_KEY, height / 2f + DEFAULT_LINE_LENGTH / 2f);
         confirm = AppCompatResources.getDrawable(getContext(), R.drawable.confirm);
         cancel = AppCompatResources.getDrawable(getContext(), R.drawable.cancel);
+        confirmRect = new Rect();
+        cancelRect = new Rect();
     }
 
     @Override
@@ -111,8 +117,11 @@ public class CaptureView extends View {
             buttonBottom = (int) (bottom - padding);
             buttonTop = buttonBottom - DEFAULT_BUTTON_SIZE;
         }
-        confirm.setBounds(confirmLeft, buttonTop, confirmRight, buttonBottom);
-        cancel.setBounds(cancelLeft, buttonTop, cancelRight, buttonBottom);
+        ;
+        confirmRect.set(confirmLeft, buttonTop, confirmRight, buttonBottom);
+        cancelRect.set(cancelLeft, buttonTop, cancelRight, buttonBottom);
+        confirm.setBounds(confirmRect);
+        cancel.setBounds(cancelRect);
         confirm.draw(canvas);
         cancel.draw(canvas);
     }
@@ -138,7 +147,10 @@ public class CaptureView extends View {
                 Log.d(TAG, "onTouchEvent: reSize:" + isReSize);
                 break;
             case MotionEvent.ACTION_UP:
-                performClick();
+                boolean isClick = Math.abs(oldX - event.getX()) <= 10 && Math.abs(oldY - event.getY()) <= 10;
+                if (isClick) {
+                    performClick();
+                }
                 break;
             case MotionEvent.ACTION_MOVE:
                 Log.d(TAG, "on touch");
@@ -149,6 +161,12 @@ public class CaptureView extends View {
                 }
         }
         return true;
+    }
+
+    @Override
+    public boolean performClick() {
+        Log.d(TAG, "performClick: button:" + isClickButton(getX(), getY(), confirmRect));
+        return super.performClick();
     }
 
     /**
@@ -237,10 +255,10 @@ public class CaptureView extends View {
      * @return boolean
      */
     private boolean isTouchAngle(float x, float y) {
-        boolean inLeft = inPoint(left, x);
-        boolean inRight = inPoint(right, x);
-        boolean inTop = inPoint(top, y);
-        boolean inBottom = inPoint(bottom, y);
+        boolean inLeft = inLinePoint(left, x);
+        boolean inRight = inLinePoint(right, x);
+        boolean inTop = inLinePoint(top, y);
+        boolean inBottom = inLinePoint(bottom, y);
         boolean isTouchAngle = (inLeft && (inTop || inBottom)) || (inRight && (inTop || inBottom));
         if (isTouchAngle) {
             this.changeLeft = inLeft;
@@ -252,20 +270,43 @@ public class CaptureView extends View {
     }
 
     /**
-     * 检查是否在一个坐标上
+     * 检查是否在一个线上坐标上
      *
-     * @param point        需要检查的坐标
-     * @param currentPoint 被检查的位置
+     * @param point       需要检查的点
+     * @param targetPoint 被检查的位置
      * @return boolean
      */
-    private boolean inPoint(float point, float currentPoint) {
+    private boolean inLinePoint(float point, float targetPoint) {
         float fixValue = 20f;
-        return point <= currentPoint + fixValue && point >= currentPoint - fixValue;
+        return point <= targetPoint + fixValue && point >= targetPoint - fixValue;
     }
 
-    private boolean isClickButton(float x, float y) {
-        //TODO
-        return false;
+    /**
+     * 检查是否在同个坐标
+     *
+     * @param x       x
+     * @param y       y
+     * @param targetX 目标x
+     * @param targetY 目标y
+     * @return boolean
+     */
+    private boolean inPoint(float x, float y, float targetX, float targetY) {
+        return inLinePoint(x, targetX) && inLinePoint(y, targetY);
+    }
+
+    /**
+     * 检查是否点击了按钮的坐标
+     *
+     * @param x      x
+     * @param y      y
+     * @param button 按钮
+     * @return boolean
+     */
+    private boolean isClickButton(float x, float y, Rect button) {
+        return inPoint(x, y, button.left, button.top) &&
+                inPoint(x, y, button.left, button.bottom) &&
+                inPoint(x, y, button.right, button.top) &&
+                inPoint(x, y, button.right, button.bottom);
     }
 
     private boolean checkXOver(float moveX) {
@@ -276,16 +317,4 @@ public class CaptureView extends View {
         return top + moveY <= 0 || bottom + moveY >= getHeight();
     }
 
-    private boolean checkXOver(float left, float right) {
-        return left <= 0 || right >= getWidth();
-    }
-
-    private boolean checkYOver(float top, float bottom) {
-        return top <= 0 || bottom >= getHeight();
-    }
-
-    @Override
-    public boolean performClick() {
-        return super.performClick();
-    }
 }
