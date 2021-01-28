@@ -1,4 +1,4 @@
-package com.github.wensimin.rikaisya;
+package com.github.wensimin.rikaisya.activity;
 
 import android.content.SharedPreferences;
 import android.os.Bundle;
@@ -10,6 +10,8 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceFragmentCompat;
+
+import com.github.wensimin.rikaisya.R;
 
 public class OCRSettingsActivity extends AppCompatActivity {
 

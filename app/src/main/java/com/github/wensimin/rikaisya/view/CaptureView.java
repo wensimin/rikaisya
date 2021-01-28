@@ -30,7 +30,6 @@ public class CaptureView extends View {
     private static final float DEFAULT_LINE_LENGTH = 300f;
     private static final float MIN_LINE_LENGTH = 100f;
     private static final int DEFAULT_BUTTON_SIZE = 80;
-
     public static final String CAP_LEFT_KEY = "CAP_LEFT_KEY";
     public static final String CAP_RIGHT_KEY = "CAP_RIGHT_KEY";
     public static final String CAP_TOP_KEY = "CAP_TOP_KEY";
@@ -41,6 +40,8 @@ public class CaptureView extends View {
     private float bottom = 0f;
     private float oldX = 0f;
     private float oldY = 0f;
+    private float startX;
+    private float startY;
     private SharedPreferences preferences;
     private boolean isReSize = false;
     private boolean changeLeft = false;
@@ -51,7 +52,7 @@ public class CaptureView extends View {
     private Rect confirmRect;
     private Drawable cancel;
     private Rect cancelRect;
-
+    private ResListener listener;
 
     public CaptureView(Context context) {
         super(context);
@@ -117,7 +118,6 @@ public class CaptureView extends View {
             buttonBottom = (int) (bottom - padding);
             buttonTop = buttonBottom - DEFAULT_BUTTON_SIZE;
         }
-        ;
         confirmRect.set(confirmLeft, buttonTop, confirmRight, buttonBottom);
         cancelRect.set(cancelLeft, buttonTop, cancelRight, buttonBottom);
         confirm.setBounds(confirmRect);
@@ -143,11 +143,13 @@ public class CaptureView extends View {
             case MotionEvent.ACTION_DOWN:
                 oldX = event.getX();
                 oldY = event.getY();
+                startX = event.getX();
+                startY = event.getY();
                 this.isReSize = isTouchAngle(oldX, oldY);
                 Log.d(TAG, "onTouchEvent: reSize:" + isReSize);
                 break;
             case MotionEvent.ACTION_UP:
-                boolean isClick = Math.abs(oldX - event.getX()) <= 10 && Math.abs(oldY - event.getY()) <= 10;
+                boolean isClick = Math.abs(startX - event.getX()) <= 10 && Math.abs(startY - event.getY()) <= 10;
                 if (isClick) {
                     performClick();
                 }
@@ -165,7 +167,15 @@ public class CaptureView extends View {
 
     @Override
     public boolean performClick() {
-        Log.d(TAG, "performClick: button:" + isClickButton(getX(), getY(), confirmRect));
+        if (this.listener == null) {
+            return super.performClick();
+        }
+        if (isClickButton(startX, startY, confirmRect)) {
+            this.listener.confirm(left, right, top, bottom);
+        }
+        if (isClickButton(startX, startY, cancelRect)) {
+            this.listener.cancel();
+        }
         return super.performClick();
     }
 
@@ -245,7 +255,6 @@ public class CaptureView extends View {
         Log.d(TAG, "savePos: top:" + top);
         edit.putFloat(CAP_BOTTOM_KEY, bottom);
         Log.d(TAG, "savePos: bottom:" + bottom);
-        // TODO button pos
         edit.apply();
     }
 
@@ -282,19 +291,6 @@ public class CaptureView extends View {
     }
 
     /**
-     * 检查是否在同个坐标
-     *
-     * @param x       x
-     * @param y       y
-     * @param targetX 目标x
-     * @param targetY 目标y
-     * @return boolean
-     */
-    private boolean inPoint(float x, float y, float targetX, float targetY) {
-        return inLinePoint(x, targetX) && inLinePoint(y, targetY);
-    }
-
-    /**
      * 检查是否点击了按钮的坐标
      *
      * @param x      x
@@ -303,10 +299,7 @@ public class CaptureView extends View {
      * @return boolean
      */
     private boolean isClickButton(float x, float y, Rect button) {
-        return inPoint(x, y, button.left, button.top) &&
-                inPoint(x, y, button.left, button.bottom) &&
-                inPoint(x, y, button.right, button.top) &&
-                inPoint(x, y, button.right, button.bottom);
+        return x >= button.left && x <= button.right && y >= button.top && y <= button.bottom;
     }
 
     private boolean checkXOver(float moveX) {
@@ -315,6 +308,16 @@ public class CaptureView extends View {
 
     private boolean checkYOver(float moveY) {
         return top + moveY <= 0 || bottom + moveY >= getHeight();
+    }
+
+    public void setListener(ResListener listener) {
+        this.listener = listener;
+    }
+
+    public interface ResListener {
+        void confirm(float left, float right, float top, float bottom);
+
+        void cancel();
     }
 
 }

@@ -3,6 +3,9 @@
     package="com.github.wensimin.rikaisya">
 
     <uses-permission android:name="android.permission.SYSTEM_ALERT_WINDOW" />
+    <!-- delete this !-->
+    <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
+    <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
 
     <application
         android:allowBackup="false"
@@ -12,10 +15,14 @@
         android:supportsRtl="true"
         android:theme="@style/AppTheme">
         <activity
-            android:name=".OCRSettingsActivity"
+            android:name=".activity.OCRSettingsActivity"
             android:label="@string/title_activity_OCRSettings" />
         <activity
-            android:name=".MainActivity"
+            android:name=".activity.ScreenActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen"
+            />
+        <activity
+            android:name=".activity.MainActivity"
             android:label="@string/app_name"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar">
@@ -30,6 +37,7 @@
             android:name=".service.RikaiFloatingService"
             android:exported="false" />
         <service android:name=".service.OCRFloatingService" />
+        <service android:name=".service.ScreenCapService" />
         <service
             android:name=".service.RikaiTile"
             android:icon="@drawable/quick_setting"

@@ -1,4 +1,4 @@
-package com.github.wensimin.rikaisya;
+package com.github.wensimin.rikaisya.activity;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -15,6 +15,8 @@ import android.widget.Toast;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import com.github.wensimin.rikaisya.R;
+import com.github.wensimin.rikaisya.RikaiAdapter;
 import com.github.wensimin.rikaisya.api.Rikai;
 import com.github.wensimin.rikaisya.api.RikaiUtils;
 import com.github.wensimin.rikaisya.service.RikaiFloatingService;

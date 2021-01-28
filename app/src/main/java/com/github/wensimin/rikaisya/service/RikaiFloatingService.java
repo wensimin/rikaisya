@@ -15,7 +15,7 @@ import android.widget.FrameLayout;
 
 import androidx.annotation.Nullable;
 
-import com.github.wensimin.rikaisya.MainActivity;
+import com.github.wensimin.rikaisya.activity.MainActivity;
 import com.github.wensimin.rikaisya.R;
 
 /**

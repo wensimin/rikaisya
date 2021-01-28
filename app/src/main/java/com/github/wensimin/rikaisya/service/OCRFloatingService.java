@@ -5,6 +5,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
+import android.media.projection.MediaProjectionManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -19,6 +20,10 @@ import android.widget.FrameLayout;
 import androidx.annotation.Nullable;
 
 import com.github.wensimin.rikaisya.R;
+import com.github.wensimin.rikaisya.activity.MainActivity;
+import com.github.wensimin.rikaisya.activity.ScreenActivity;
+import com.github.wensimin.rikaisya.utils.SystemUtils;
+import com.github.wensimin.rikaisya.view.CaptureView;
 
 import static android.content.ContentValues.TAG;
 
@@ -74,20 +79,35 @@ public class OCRFloatingService extends Service {
      * @param view ocr按钮view
      */
     private void startCapture(View view) {
-        View captureView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.capture, new FrameLayout(getApplicationContext()), false);
+        FrameLayout layout = (FrameLayout) LayoutInflater.from(getApplicationContext()).inflate(R.layout.capture, new FrameLayout(getApplicationContext()), false);
+        CaptureView captureView = (CaptureView) layout.getChildAt(0);
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        layoutParams = new WindowManager.LayoutParams();
-        layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-        layoutParams.format = PixelFormat.TRANSLUCENT;
-        windowManager.addView(captureView, layoutParams);
+        WindowManager.LayoutParams capLayoutParams = new WindowManager.LayoutParams();
+        capLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        capLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        capLayoutParams.format = PixelFormat.TRANSLUCENT;
+        captureView.setListener(new CaptureView.ResListener() {
+            @Override
+            public void confirm(float left, float right, float top, float bottom) {
+                //TODO
+                SystemUtils.removeView(windowManager, layout);
+                Intent intent = new Intent(getBaseContext(), ScreenActivity.class);
+                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+                startActivity(intent);
+            }
+
+            @Override
+            public void cancel() {
+                SystemUtils.removeView(windowManager, layout);
+            }
+        });
+        SystemUtils.addView(windowManager, layout, capLayoutParams);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        if (!floatView.isShown()) {
-            windowManager.addView(floatView, layoutParams);
-        }
+        SystemUtils.addView(windowManager, floatView, layoutParams);
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -95,9 +115,7 @@ public class OCRFloatingService extends Service {
     @Override
     public void onDestroy() {
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        if (floatView.isShown()) {
-            windowManager.removeView(floatView);
-        }
+        SystemUtils.removeView(windowManager, floatView);
         super.onDestroy();
     }
 
@@ -147,10 +165,10 @@ public class OCRFloatingService extends Service {
                     editor.apply();
                     break;
                 case MotionEvent.ACTION_MOVE:
-                    Log.d(TAG, "on touch");
                     handler.removeCallbacks(longPressEvent);
                     layoutParams.x = (int) event.getRawX() - floatView.getWidth() / 2;
                     layoutParams.y = (int) event.getRawY() - floatView.getHeight() / 2 - 25;
+                    Log.d(TAG, String.format("x %s->%s y%s->%s", layoutParams.x, event.getRawX(), layoutParams.y, event.getRawY()));
                     this.windowManager.updateViewLayout(floatView, layoutParams);
             }
             return true;

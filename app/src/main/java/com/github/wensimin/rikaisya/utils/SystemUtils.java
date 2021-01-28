@@ -3,7 +3,9 @@ package com.github.wensimin.rikaisya.utils;
 import android.content.Context;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
+import android.view.View;
 import android.view.WindowManager;
+import android.widget.FrameLayout;
 
 import static android.content.Context.WINDOW_SERVICE;
 
@@ -37,4 +39,28 @@ public class SystemUtils {
             return 0;
     }
 
+    /**
+     * 删除view
+     *
+     * @param windowManager windowManager
+     * @param layout        layout
+     */
+    public static void removeView(WindowManager windowManager, View layout) {
+        if (layout.isShown()) {
+            windowManager.removeView(layout);
+        }
+    }
+
+    /**
+     * add view
+     *
+     * @param windowManager windowManager
+     * @param layout        layout
+     * @param params        layoutParams
+     */
+    public static void addView(WindowManager windowManager, View layout, WindowManager.LayoutParams params) {
+        if (!layout.isShown()) {
+            windowManager.addView(layout, params);
+        }
+    }
 }
