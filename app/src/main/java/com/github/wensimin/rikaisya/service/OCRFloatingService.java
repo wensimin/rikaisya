@@ -67,7 +67,7 @@ public class OCRFloatingService extends Service {
         // 拖动事件
         floatView.setOnTouchListener(new OCRTouchListener(windowManager,
                 // 长按事件
-                () -> Log.d(TAG, "Long press!")));
+                this::startCapture));
         // 单击事件
         floatView.setOnClickListener(this::startCapture);
         super.onCreate();
@@ -89,11 +89,8 @@ public class OCRFloatingService extends Service {
         captureView.setListener(new CaptureView.ResListener() {
             @Override
             public void confirm(float left, float right, float top, float bottom) {
-                //TODO
                 SystemUtils.removeView(windowManager, layout);
-                Intent intent = new Intent(getBaseContext(), ScreenActivity.class);
-                intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(intent);
+                startCapture();
             }
 
             @Override
@@ -102,6 +99,16 @@ public class OCRFloatingService extends Service {
             }
         });
         SystemUtils.addView(windowManager, layout, capLayoutParams);
+    }
+
+    /**
+     * 开始截图activity
+     */
+    //TODO LOCK 避免重复操作
+    private void startCapture() {
+        Intent intent = new Intent(getBaseContext(), ScreenActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        startActivity(intent);
     }
 
     @Override

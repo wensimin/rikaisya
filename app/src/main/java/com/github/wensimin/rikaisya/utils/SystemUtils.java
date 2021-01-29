@@ -22,6 +22,15 @@ public class SystemUtils {
         return displayMetrics;
     }
 
+    public static int getStatusBarHeight(Resources resources) {
+        int statusBarHeight = 0;
+        int resourceId = resources.getIdentifier("status_bar_height", "dimen", "android");
+        if (resourceId > 0) {
+            statusBarHeight = resources.getDimensionPixelSize(resourceId);
+        }
+        return statusBarHeight;
+    }
+
     public static boolean showNavigationBar(Resources resources) {
         int id = resources.getIdentifier("config_showNavigationBar", "bool", "android");
         return id > 0 && resources.getBoolean(id);

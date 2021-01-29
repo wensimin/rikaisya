@@ -87,11 +87,25 @@ public class CaptureView extends View {
         cancelRect = new Rect();
     }
 
+
     @Override
     protected void onDraw(Canvas canvas) {
+        checkLine();
         canvas.drawLines(getLinePts(left, right, top, bottom), linePaint);
         drawButton(canvas);
         super.onDraw(canvas);
+    }
+
+    private void checkLine() {
+        int width = getWidth();
+        int height = getHeight();
+        boolean reset = left <= 0 || right >= width || top <= 0 || bottom >= height;
+        if (reset) {
+            left = width / 2f - DEFAULT_LINE_LENGTH;
+            right = width / 2f + DEFAULT_LINE_LENGTH;
+            top = height / 2f - DEFAULT_LINE_LENGTH / 2f;
+            bottom = height / 2f + DEFAULT_LINE_LENGTH / 2f;
+        }
     }
 
     /**
@@ -190,31 +204,30 @@ public class CaptureView extends View {
         float moveY = y - oldY;
         Log.d(TAG, "touchReSize: moveX:" + moveX);
         Log.d(TAG, "touchReSize: moveY:" + moveY);
-        float newLeft = left;
-        float newRight = right;
-        float newTop = top;
-        float newBottom = bottom;
-        if (changeLeft) {
-            newLeft += moveX;
-            left = newLeft;
+        if (changeLeft)
+            left += moveX;
+        if (changeRight)
+            right += moveX;
+        if (changeTop)
+            top += moveY;
+        if (changeBottom)
+            bottom += moveY;
+        float overWidth = Math.abs(left - right) - MIN_LINE_LENGTH;
+        if (overWidth <= 0) {
+            if (changeLeft)
+                left += overWidth;
+            if (changeRight)
+                right -= overWidth;
         }
-        if (changeRight) {
-            newRight += moveX;
-            right = newRight;
+        float overHeight = Math.abs(top - bottom) - MIN_LINE_LENGTH;
+        if (overHeight <= 0) {
+            if (changeTop)
+                top += overHeight;
+            if (changeBottom)
+                bottom -= overHeight;
         }
         oldX = x;
-        if (changeTop) {
-            newTop += moveY;
-            top = newTop;
-        }
-        if (changeBottom) {
-            newBottom += moveY;
-            bottom = newBottom;
-        }
         oldY = y;
-        if (Math.abs(newLeft - newRight) <= MIN_LINE_LENGTH || Math.abs(newTop - newBottom) <= MIN_LINE_LENGTH) {
-            return;
-        }
         this.invalidate();
         this.savePos();
     }
@@ -228,6 +241,7 @@ public class CaptureView extends View {
     private void touchMove(float x, float y) {
         float moveX = x - oldX;
         float moveY = y - oldY;
+        //TODO 超出削除以达成平滑效果
         if (!checkXOver(moveX)) {
             left += moveX;
             right += moveX;
@@ -248,14 +262,26 @@ public class CaptureView extends View {
     private void savePos() {
         SharedPreferences.Editor edit = preferences.edit();
         edit.putFloat(CAP_LEFT_KEY, left);
-        Log.d(TAG, "savePos: left:" + left);
         edit.putFloat(CAP_RIGHT_KEY, right);
-        Log.d(TAG, "savePos: right:" + right);
         edit.putFloat(CAP_TOP_KEY, top);
-        Log.d(TAG, "savePos: top:" + top);
         edit.putFloat(CAP_BOTTOM_KEY, bottom);
-        Log.d(TAG, "savePos: bottom:" + bottom);
+        Log.d(TAG, String.format("savePos: left:%s,right:%s,top:%s,bottom:%s", left, right, top, bottom));
         edit.apply();
+    }
+
+    /**
+     * 获取当前捕获的rect
+     *
+     * @param preferences 首选项
+     * @return rect
+     */
+    public static Rect getCaptureRect(SharedPreferences preferences) {
+        Rect rect = new Rect();
+        rect.left = (int) preferences.getFloat(CAP_LEFT_KEY, 0);
+        rect.right = (int) preferences.getFloat(CAP_RIGHT_KEY, 0);
+        rect.top = (int) preferences.getFloat(CAP_TOP_KEY, 0);
+        rect.bottom = (int) preferences.getFloat(CAP_BOTTOM_KEY, 0);
+        return rect;
     }
 
     /**
