@@ -36,21 +36,21 @@ import java.nio.ByteBuffer;
 import static android.content.ContentValues.TAG;
 
 public class ScreenActivity extends Activity {
-    MediaProjectionManager mediaProjectionManager;
+    private volatile boolean isFinish = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         verifyStoragePermissions(this);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
-        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-        Window window = this.getWindow();
-        WindowManager.LayoutParams p = window.getAttributes(); // 获取对话框当前的参数值
-        p.height = 0; // 高度设置为0
-        p.width = 0;//宽0
-        p.gravity = Gravity.CENTER;
-        window.setAttributes(p);
-        mediaProjectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
+//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
+//        Window window = this.getWindow();
+//        WindowManager.LayoutParams p = window.getAttributes(); // 获取对话框当前的参数值
+//        p.height = 0; // 高度设置为0
+//        p.width = 0;//宽0
+//        p.gravity = Gravity.CENTER;
+//        window.setAttributes(p);
+        MediaProjectionManager mediaProjectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
         startActivityForResult(mediaProjectionManager.createScreenCaptureIntent(), 1);
     }
 
@@ -58,6 +58,7 @@ public class ScreenActivity extends Activity {
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "onActivityResult: " + (requestCode == RESULT_OK));
         if (resultCode == RESULT_OK) {
             Intent i = new Intent(this, ScreenCapService.class)
                     .putExtra(ScreenCapService.EXTRA_RESULT_INTENT, data)
@@ -65,10 +66,25 @@ public class ScreenActivity extends Activity {
             startService(i);
         }
         // FIXME 执行activity之后应该没有任何残留
+        isFinish = true;
         finishAndRemoveTask();
     }
 
-    //fixme DELETE !
+    @Override
+    protected void onResume() {
+//        while (!isFinish) ;
+        //FIXME 等待onActivityResult执行 应该不可靠
+        try {
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        Log.d(TAG, "onResume: ");
+        finish();
+        super.onResume();
+    }
+
+    //fixme DELETE ! 临时申请权限,实质无需
     public static void verifyStoragePermissions(Activity activity) {
         String[] PERMISSIONS_STORAGE = {
                 Manifest.permission.READ_EXTERNAL_STORAGE,

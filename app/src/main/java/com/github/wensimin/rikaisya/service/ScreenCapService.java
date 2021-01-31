@@ -19,6 +19,8 @@ import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.Gravity;
+import android.view.View;
 import android.view.WindowManager;
 import android.widget.Toast;
 
@@ -42,6 +44,10 @@ public class ScreenCapService extends Service {
     private MediaProjectionManager mediaProjectionManager;
     private WindowManager windowManager;
     private Rect rect;
+    /**
+     * 用于检查状态栏是否存在的view
+     */
+    private View checkStatusBarView;
 
     @Nullable
     @Override
@@ -55,10 +61,11 @@ public class ScreenCapService extends Service {
     public void onCreate() {
         super.onCreate();
         windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        initCheckStatusBarView();
         screenMetrics = new DisplayMetrics();
         mediaProjectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
         DisplayMetrics screenMetrics = SystemUtils.getScreenMetrics(getApplicationContext());
-        imageReader = ImageReader.newInstance(screenMetrics.widthPixels, screenMetrics.heightPixels, PixelFormat.RGBA_8888, 2);
+        imageReader = ImageReader.newInstance(screenMetrics.widthPixels, screenMetrics.heightPixels, PixelFormat.RGBA_8888, 1);
     }
 
     @Override
@@ -86,7 +93,7 @@ public class ScreenCapService extends Service {
     }
 
     private boolean checkIsOver(DisplayMetrics screenMetrics, Rect rect) {
-        return rect.left <= 0 || rect.right >= screenMetrics.widthPixels || rect.top <= 0 || rect.bottom >= screenMetrics.heightPixels;
+        return rect.left < 0 || rect.right > screenMetrics.widthPixels || rect.top < 0 || rect.bottom > screenMetrics.heightPixels;
     }
 
     private void writeFile(Bitmap bitmap) {
@@ -114,8 +121,14 @@ public class ScreenCapService extends Service {
         }
     }
 
+    /**
+     * 从imageReader 获取bitmap
+     * @param imageReader reader
+     * @return bitmap
+     * fixme image nullPoint & bitmap dataEmpty
+     */
     private Bitmap getBitmap(ImageReader imageReader) {
-        Image image = imageReader.acquireLatestImage();
+        Image image = imageReader.acquireNextImage();
         if (image == null) {
             Log.w(TAG, "getBitmap: image is null, retry");
             return getBitmap(imageReader);
@@ -143,12 +156,54 @@ public class ScreenCapService extends Service {
      */
     private Bitmap splitBitmap(Bitmap bitmap) {
         int statusBarHeight = SystemUtils.getStatusBarHeight(getResources());
+        // check statusBar exist
+        if (!checkStatusBarExist()) {
+            statusBarHeight = 0;
+        }
         return Bitmap.createBitmap(bitmap, rect.left, rect.top + statusBarHeight, rect.right - rect.left, rect.bottom - rect.top);
     }
+
+    /**
+     * 初始化检查状态栏的view
+     */
+    private void initCheckStatusBarView() {
+        WindowManager.LayoutParams checkStatusBarViewLayout = new WindowManager.LayoutParams();
+        checkStatusBarViewLayout.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        checkStatusBarViewLayout.gravity = Gravity.END | Gravity.TOP;
+        checkStatusBarViewLayout.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        checkStatusBarViewLayout.width = 1;
+        checkStatusBarViewLayout.height = WindowManager.LayoutParams.MATCH_PARENT;
+        checkStatusBarViewLayout.format = PixelFormat.TRANSPARENT;
+        checkStatusBarView = new View(this); //View helperWnd;
+        SystemUtils.addView(windowManager, checkStatusBarView, checkStatusBarViewLayout);
+    }
+
+    /**
+     * 销毁检查状态栏的view
+     */
+    private void destroyCheckStatusBarView() {
+        SystemUtils.removeView(windowManager, checkStatusBarView);
+        checkStatusBarView = null;
+    }
+
+    /**
+     * 检查状态栏是否存在
+     *
+     * @return 是否存在状态栏
+     */
+    public boolean checkStatusBarExist() {
+        if (checkStatusBarView == null) {
+            return false;
+        }
+        Log.d(TAG, "checkStatusBarExist: view height:" + checkStatusBarView.getHeight());
+        return !(checkStatusBarView.getHeight() == screenMetrics.heightPixels);
+    }
+
 
     @Override
     public void onDestroy() {
         imageReader.getSurface().release();
+        destroyCheckStatusBarView();
         super.onDestroy();
     }
 }

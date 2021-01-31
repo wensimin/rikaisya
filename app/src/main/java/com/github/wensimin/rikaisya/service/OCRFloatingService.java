@@ -5,7 +5,6 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
-import android.media.projection.MediaProjectionManager;
 import android.os.Handler;
 import android.os.IBinder;
 import android.preference.PreferenceManager;
@@ -20,7 +19,6 @@ import android.widget.FrameLayout;
 import androidx.annotation.Nullable;
 
 import com.github.wensimin.rikaisya.R;
-import com.github.wensimin.rikaisya.activity.MainActivity;
 import com.github.wensimin.rikaisya.activity.ScreenActivity;
 import com.github.wensimin.rikaisya.utils.SystemUtils;
 import com.github.wensimin.rikaisya.view.CaptureView;
@@ -33,8 +31,9 @@ import static android.content.ContentValues.TAG;
 //TODO 整理代码
 public class OCRFloatingService extends Service {
 
-    private View floatView;
+    private View OCRButton;
     private WindowManager.LayoutParams layoutParams;
+    private WindowManager windowManager;
 
     @Nullable
     @Override
@@ -44,10 +43,10 @@ public class OCRFloatingService extends Service {
 
     @Override
     public void onCreate() {
-        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
+        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         // 设置LayoutParam
         layoutParams = new WindowManager.LayoutParams();
-        floatView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.ocr_btn, new FrameLayout(getApplicationContext()), false);
+        OCRButton = LayoutInflater.from(getApplicationContext()).inflate(R.layout.ocr_btn, new FrameLayout(getApplicationContext()), false);
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         layoutParams.format = PixelFormat.TRANSLUCENT;
         layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
@@ -56,8 +55,8 @@ public class OCRFloatingService extends Service {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         Point point = new Point();
         windowManager.getDefaultDisplay().getSize(point);
-        int defaultX = point.x / 2 - floatView.getWidth() / 2;
-        int defaultY = point.y / 2 - floatView.getHeight() / 4;
+        int defaultX = point.x / 2 - OCRButton.getWidth() / 2;
+        int defaultY = point.y / 2 - OCRButton.getHeight() / 4;
         int x = preferences.getInt(OCRTouchListener.OCR_X_KEY, defaultX);
         int y = preferences.getInt(OCRTouchListener.OCR_Y_KEY, defaultY);
         layoutParams.x = x;
@@ -65,13 +64,14 @@ public class OCRFloatingService extends Service {
         layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
         // 拖动事件
-        floatView.setOnTouchListener(new OCRTouchListener(windowManager,
+        OCRButton.setOnTouchListener(new OCRTouchListener(windowManager,
                 // 长按事件
                 this::startCapture));
         // 单击事件
-        floatView.setOnClickListener(this::startCapture);
+        OCRButton.setOnClickListener(this::startCapture);
         super.onCreate();
     }
+
 
     /**
      * 开始进行屏幕截图
@@ -81,7 +81,6 @@ public class OCRFloatingService extends Service {
     private void startCapture(View view) {
         FrameLayout layout = (FrameLayout) LayoutInflater.from(getApplicationContext()).inflate(R.layout.capture, new FrameLayout(getApplicationContext()), false);
         CaptureView captureView = (CaptureView) layout.getChildAt(0);
-        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         WindowManager.LayoutParams capLayoutParams = new WindowManager.LayoutParams();
         capLayoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         capLayoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
@@ -107,22 +106,20 @@ public class OCRFloatingService extends Service {
     //TODO LOCK 避免重复操作
     private void startCapture() {
         Intent intent = new Intent(getBaseContext(), ScreenActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
     }
 
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
-        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        SystemUtils.addView(windowManager, floatView, layoutParams);
+        SystemUtils.addView(windowManager, OCRButton, layoutParams);
         return super.onStartCommand(intent, flags, startId);
     }
 
 
     @Override
     public void onDestroy() {
-        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
-        SystemUtils.removeView(windowManager, floatView);
+        SystemUtils.removeView(windowManager, OCRButton);
         super.onDestroy();
     }
 
@@ -173,10 +170,10 @@ public class OCRFloatingService extends Service {
                     break;
                 case MotionEvent.ACTION_MOVE:
                     handler.removeCallbacks(longPressEvent);
-                    layoutParams.x = (int) event.getRawX() - floatView.getWidth() / 2;
-                    layoutParams.y = (int) event.getRawY() - floatView.getHeight() / 2 - 25;
+                    layoutParams.x = (int) event.getRawX() - OCRButton.getWidth() / 2;
+                    layoutParams.y = (int) event.getRawY() - OCRButton.getHeight() / 2 - 25;
                     Log.d(TAG, String.format("x %s->%s y%s->%s", layoutParams.x, event.getRawX(), layoutParams.y, event.getRawY()));
-                    this.windowManager.updateViewLayout(floatView, layoutParams);
+                    this.windowManager.updateViewLayout(OCRButton, layoutParams);
             }
             return true;
         }

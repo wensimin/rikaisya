@@ -40,6 +40,7 @@ public class SystemUtils {
         DisplayMetrics metrics = new DisplayMetrics();
         windowManager.getDefaultDisplay().getMetrics(metrics);
         int usableHeight = metrics.heightPixels;
+        // 使用高度差求导航栏高度
         windowManager.getDefaultDisplay().getRealMetrics(metrics);
         int realHeight = metrics.heightPixels;
         if (realHeight > usableHeight)
