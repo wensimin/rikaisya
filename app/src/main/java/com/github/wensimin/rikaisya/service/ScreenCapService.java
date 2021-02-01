@@ -20,14 +20,24 @@ import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.FrameLayout;
+import android.widget.Switch;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.appcompat.widget.AppCompatButton;
+import androidx.appcompat.widget.SwitchCompat;
 
+import com.github.wensimin.rikaisya.R;
 import com.github.wensimin.rikaisya.utils.SystemUtils;
 import com.github.wensimin.rikaisya.view.CaptureView;
+import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -86,10 +96,33 @@ public class ScreenCapService extends Service {
             Bitmap bitmap = this.getBitmap(imageReader);
             if (bitmap != null) {
                 this.writeFile(bitmap);
+                this.OCRResult();
             }
             mediaProjection.stop();
         }, 0);
         return super.onStartCommand(intent, flags, startId);
+    }
+
+    private void OCRResult() {
+        FrameLayout layout = (FrameLayout) LayoutInflater.from(getApplicationContext()).inflate(R.layout.ocr_result_view, new FrameLayout(getApplicationContext()), false);
+        EditText sourceText = layout.findViewById(R.id.sourceText);
+        sourceText.setText("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaanishibushishb愛lz地涌hb魏kwbぁjkpジオ所きみはしゃ");
+        sourceText.setEnabled(false);
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch transitionSwitch = layout.findViewById(R.id.transitionSwitch);
+        transitionSwitch.setEnabled(false);
+        TextView resultText = layout.findViewById(R.id.resultText);;
+        resultText.setText("111111111111111111111111111111111111111111111111111111111111111111aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
+        Button cancelButton = layout.findViewById(R.id.cancelButton);
+        cancelButton.setOnClickListener(v -> {
+            SystemUtils.removeView(windowManager,layout);
+        });
+        WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
+        layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
+        layoutParams.format = PixelFormat.TRANSLUCENT;
+        layoutParams.gravity = Gravity.START | Gravity.TOP;
+        layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
+        layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
+        SystemUtils.addView(windowManager, layout, layoutParams);
     }
 
     private boolean checkIsOver(DisplayMetrics screenMetrics, Rect rect) {
@@ -124,6 +157,7 @@ public class ScreenCapService extends Service {
 
     /**
      * 从imageReader 获取bitmap
+     *
      * @param imageReader reader
      * @return bitmap
      * fixme image nullPoint & bitmap dataEmpty

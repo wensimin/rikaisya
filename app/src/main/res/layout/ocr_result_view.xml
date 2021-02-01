@@ -1,36 +1,82 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content">
+    android:layout_height="wrap_content"
+    android:background="@color/floatViewBackground">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:orientation="vertical"
-        tools:ignore="UselessParent">
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp">
 
         <EditText
             android:id="@+id/sourceText"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
             android:layout_width="match_parent"
-            android:layout_height="30dp"
+            android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:inputType="textMultiLine"
-            android:tooltipText="11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
             android:autofillHints="no"
+            android:inputType="textMultiLine"
+            android:paddingTop="30dp"
+            android:paddingBottom="30dp"
+            android:textColor="@color/floatViewText"
             tools:ignore="LabelFor" />
-
 
         <Switch
             android:id="@+id/transitionSwitch"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
             android:layout_gravity="end"
-            android:paddingEnd="20dp"
-            android:width="50dp"
-            android:height="50dp"
-            android:enabled="false"
-            tools:ignore="RtlSymmetry,UseSwitchCompatOrMaterialXml" />
+            android:paddingTop="30dp"
+            android:paddingBottom="30dp"
+            android:text="@string/autoTransitionSwitch"
+            android:textAlignment="viewEnd"
+            android:textColor="@color/floatViewText"
+            tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+        <TextView
+            android:id="@+id/resultText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center"
+            android:textColor="@color/floatViewText" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:paddingStart="10dp"
+            android:paddingTop="30dp"
+            android:paddingEnd="10dp"
+            android:paddingBottom="30dp">
+
+            <Button
+                android:id="@+id/editButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_weight="45"
+                android:gravity="center"
+                android:text="@string/edit"
+                android:textColor="@color/floatViewText" />
+
+            <View
+                android:layout_width="0dp"
+                android:layout_height="0dp"
+                android:layout_weight="10" />
+
+            <Button
+                android:id="@+id/cancelButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:layout_weight="45"
+                android:gravity="center"
+                android:text="@string/quit"
+                android:textColor="@color/floatViewText" />
+        </LinearLayout>
+
     </LinearLayout>
+
+
 </FrameLayout>

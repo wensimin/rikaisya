@@ -13,6 +13,9 @@
 
     <string name="tencent_translate_id">腾讯翻译 API id</string>
     <string name="tencent_translate_key">腾讯翻译 API key</string>
+    <string name="edit">编辑</string>
+    <string name="quit">退出</string>
+    <string name="autoTransitionSwitch">自动翻译开关</string>
 
 
 </resources>
