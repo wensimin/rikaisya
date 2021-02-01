@@ -19,6 +19,7 @@
             android:label="@string/title_activity_OCRSettings" />
         <activity
             android:name=".activity.ScreenActivity"
+            android:excludeFromRecents="true"
             android:taskAffinity=".screenTask"
             android:theme="@android:style/Theme.NoDisplay" />
         <activity

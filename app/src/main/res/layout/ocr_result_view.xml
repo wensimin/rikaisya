@@ -16,7 +16,10 @@
             android:layout_width="match_parent"
             android:layout_height="30dp"
             android:layout_gravity="center"
-            android:text="TextView" />
+            android:inputType="textMultiLine"
+            android:tooltipText="11111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111111"
+            android:autofillHints="no"
+            tools:ignore="LabelFor" />
 
 
         <Switch

@@ -112,6 +112,7 @@ public class ScreenCapService extends Service {
             bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
             out.flush();
             out.close();
+            Log.d(TAG, "writeFile: end");
             Intent media = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
             Uri contentUri = Uri.fromFile(fileImage);
             media.setData(contentUri);
