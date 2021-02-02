@@ -2,6 +2,7 @@ package com.github.wensimin.rikaisya.service;
 
 import android.annotation.SuppressLint;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
@@ -26,6 +27,7 @@ import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.FrameLayout;
@@ -128,7 +130,8 @@ public class ScreenCapService extends Service {
         initOCRResultView(layout, OCRResult);
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+//        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
+        layoutParams.flags = WindowManager.LayoutParams.FLAG_FULLSCREEN;
         layoutParams.format = PixelFormat.TRANSLUCENT;
         layoutParams.gravity = Gravity.START | Gravity.TOP;
         layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
@@ -145,7 +148,7 @@ public class ScreenCapService extends Service {
     private void initOCRResultView(FrameLayout layout, String OCRResult) {
         EditText sourceText = layout.findViewById(R.id.sourceText);
         sourceText.setText(OCRResult);
-        sourceText.setEnabled(false);
+        setSourceTextEnabled(sourceText, false);
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch transitionSwitch = layout.findViewById(R.id.transitionSwitch);
         transitionSwitch.setEnabled(false);
         TextView resultText = layout.findViewById(R.id.resultText);
@@ -164,14 +167,27 @@ public class ScreenCapService extends Service {
         editButton.setOnClickListener(v -> {
             editButton.setVisibility(View.GONE);
             confirmButton.setVisibility(View.VISIBLE);
-            sourceText.setEnabled(true);
+            setSourceTextEnabled(sourceText, true);
+
         });
         confirmButton.setOnClickListener(v -> {
             confirmButton.setVisibility(View.GONE);
             editButton.setVisibility(View.VISIBLE);
-            sourceText.setEnabled(false);
+            setSourceTextEnabled(sourceText, false);
+
             //TODO 翻译
         });
+    }
+
+    private void setSourceTextEnabled(EditText sourceText, boolean enable) {
+        sourceText.setFocusable(enable);
+        sourceText.setCursorVisible(enable);
+        sourceText.setClickable(!enable);
+        if (enable) {
+//            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+//            imm.showSoftInput(sourceText, InputMethodManager.SHOW_FORCED);
+            sourceText.requestFocus();
+        }
     }
 
     private boolean checkIsOver(DisplayMetrics screenMetrics, Rect rect) {

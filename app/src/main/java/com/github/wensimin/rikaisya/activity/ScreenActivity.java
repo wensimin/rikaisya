@@ -40,7 +40,7 @@ import java.nio.ByteBuffer;
 import static android.content.ContentValues.TAG;
 
 public class ScreenActivity extends ComponentActivity {
-    private volatile boolean isFinish = false;
+    private final boolean isFinish = false;
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
