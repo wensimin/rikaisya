@@ -16,6 +16,7 @@
     <string name="edit">编辑</string>
     <string name="quit">退出</string>
     <string name="autoTransitionSwitch">自动翻译开关</string>
+    <string name="confirm">确认</string>
 
 
 </resources>

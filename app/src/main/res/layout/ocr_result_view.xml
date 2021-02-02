@@ -19,7 +19,7 @@
             android:autofillHints="no"
             android:inputType="textMultiLine"
             android:paddingTop="30dp"
-            android:paddingBottom="30dp"
+            android:textAlignment="center"
             android:textColor="@color/floatViewText"
             tools:ignore="LabelFor" />
 
@@ -28,8 +28,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="end"
-            android:paddingTop="30dp"
-            android:paddingBottom="30dp"
+            android:paddingTop="15dp"
+            android:paddingBottom="15dp"
             android:text="@string/autoTransitionSwitch"
             android:textAlignment="viewEnd"
             android:textColor="@color/floatViewText"
@@ -40,6 +40,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:textAlignment="center"
             android:textColor="@color/floatViewText" />
 
         <LinearLayout
@@ -58,6 +59,17 @@
                 android:layout_weight="45"
                 android:gravity="center"
                 android:text="@string/edit"
+                android:textColor="@color/floatViewText" />
+
+            <Button
+                android:id="@+id/confirmButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="start"
+                android:layout_weight="45"
+                android:gravity="center"
+                android:visibility="gone"
+                android:text="@string/confirm"
                 android:textColor="@color/floatViewText" />
 
             <View

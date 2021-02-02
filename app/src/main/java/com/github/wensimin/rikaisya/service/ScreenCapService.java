@@ -31,13 +31,10 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
-import androidx.appcompat.widget.AppCompatButton;
-import androidx.appcompat.widget.SwitchCompat;
 
 import com.github.wensimin.rikaisya.R;
 import com.github.wensimin.rikaisya.utils.SystemUtils;
 import com.github.wensimin.rikaisya.view.CaptureView;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -96,26 +93,20 @@ public class ScreenCapService extends Service {
             Bitmap bitmap = this.getBitmap(imageReader);
             if (bitmap != null) {
                 this.writeFile(bitmap);
-                this.OCRResult();
+                //TODO OCR
+                this.openOCRResultView("ocr string");
             }
             mediaProjection.stop();
         }, 0);
         return super.onStartCommand(intent, flags, startId);
     }
 
-    private void OCRResult() {
-        FrameLayout layout = (FrameLayout) LayoutInflater.from(getApplicationContext()).inflate(R.layout.ocr_result_view, new FrameLayout(getApplicationContext()), false);
-        EditText sourceText = layout.findViewById(R.id.sourceText);
-        sourceText.setText("aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaanishibushishb愛lz地涌hb魏kwbぁjkpジオ所きみはしゃ");
-        sourceText.setEnabled(false);
-        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch transitionSwitch = layout.findViewById(R.id.transitionSwitch);
-        transitionSwitch.setEnabled(false);
-        TextView resultText = layout.findViewById(R.id.resultText);;
-        resultText.setText("111111111111111111111111111111111111111111111111111111111111111111aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa");
-        Button cancelButton = layout.findViewById(R.id.cancelButton);
-        cancelButton.setOnClickListener(v -> {
-            SystemUtils.removeView(windowManager,layout);
-        });
+    /**
+     * 打开OCR结果窗口
+     */
+    private void openOCRResultView(String OCRResult) {
+        FrameLayout layout = (FrameLayout) LayoutInflater.from(getApplicationContext()).inflate(R.layout.ocr_result_view, new FrameLayout(getApplicationContext()), true);
+        initOCRResultView(layout, OCRResult);
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
         layoutParams.format = PixelFormat.TRANSLUCENT;
@@ -123,6 +114,44 @@ public class ScreenCapService extends Service {
         layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
         SystemUtils.addView(windowManager, layout, layoutParams);
+    }
+
+    /**
+     * 初始化 OCR结果view
+     *
+     * @param layout    layout
+     * @param OCRResult ocr结果
+     */
+    private void initOCRResultView(FrameLayout layout, String OCRResult) {
+        EditText sourceText = layout.findViewById(R.id.sourceText);
+        sourceText.setText(OCRResult);
+        sourceText.setEnabled(false);
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch transitionSwitch = layout.findViewById(R.id.transitionSwitch);
+        transitionSwitch.setEnabled(false);
+        TextView resultText = layout.findViewById(R.id.resultText);
+        //TODO 翻译
+        resultText.setText("翻译结果翻译结果");
+        Button cancelButton = layout.findViewById(R.id.cancelButton);
+        cancelButton.setOnClickListener(v -> SystemUtils.removeView(windowManager, layout));
+        resultText.setOnClickListener(v -> {
+            Log.d(TAG, "resultText click");
+        });
+        sourceText.setOnClickListener(v -> {
+            Log.d(TAG, "sourceText click");
+        });
+        Button editButton = layout.findViewById(R.id.editButton);
+        Button confirmButton = layout.findViewById(R.id.confirmButton);
+        editButton.setOnClickListener(v -> {
+            editButton.setVisibility(View.GONE);
+            confirmButton.setVisibility(View.VISIBLE);
+            sourceText.setEnabled(true);
+        });
+        confirmButton.setOnClickListener(v -> {
+            confirmButton.setVisibility(View.GONE);
+            editButton.setVisibility(View.VISIBLE);
+            sourceText.setEnabled(false);
+            //TODO 翻译
+        });
     }
 
     private boolean checkIsOver(DisplayMetrics screenMetrics, Rect rect) {
