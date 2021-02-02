@@ -7,6 +7,7 @@ import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.hardware.display.DisplayManager;
+import android.hardware.display.VirtualDisplay;
 import android.media.Image;
 import android.media.ImageReader;
 import android.media.projection.MediaProjection;
@@ -17,10 +18,12 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Surface;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -36,25 +39,33 @@ import com.github.wensimin.rikaisya.R;
 import com.github.wensimin.rikaisya.utils.SystemUtils;
 import com.github.wensimin.rikaisya.view.CaptureView;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 
 import static android.content.ContentValues.TAG;
 
+/**
+ * 截图service
+ * 进行截图&后续ocr
+ * TODO 性能优化
+ */
 public class ScreenCapService extends Service {
     public static final String EXTRA_RESULT_INTENT = "EXTRA_RESULT_INTENT";
     public static final String EXTRA_RESULT_CODE = "EXTRA_RESULT_CODE";
 
-    private ImageReader imageReader;
     private DisplayMetrics screenMetrics;
     private MediaProjectionManager mediaProjectionManager;
     private WindowManager windowManager;
     private Rect rect;
+    private ImageReader imageReader;
+    private Surface surface;
     /**
      * 用于检查状态栏是否存在的view
      */
     private View checkStatusBarView;
+    private boolean isCaptured = false;
 
     @Nullable
     @Override
@@ -71,13 +82,14 @@ public class ScreenCapService extends Service {
         initCheckStatusBarView();
         screenMetrics = new DisplayMetrics();
         mediaProjectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
-        DisplayMetrics screenMetrics = SystemUtils.getScreenMetrics(getApplicationContext());
-        imageReader = ImageReader.newInstance(screenMetrics.widthPixels, screenMetrics.heightPixels, PixelFormat.RGBA_8888, 1);
     }
 
+    @SuppressLint("WrongConstant")
     @Override
     public int onStartCommand(Intent intent, int flags, int startId) {
         windowManager.getDefaultDisplay().getRealMetrics(screenMetrics);
+        imageReader = ImageReader.newInstance(screenMetrics.widthPixels, screenMetrics.heightPixels, PixelFormat.RGBA_8888, 1);
+        surface = imageReader.getSurface();
         rect = CaptureView.getCaptureRect(PreferenceManager.getDefaultSharedPreferences(getBaseContext()));
         if (checkIsOver(screenMetrics, rect)) {
             Toast.makeText(this, "区域无效,请重新截取", Toast.LENGTH_SHORT).show();
@@ -86,18 +98,25 @@ public class ScreenCapService extends Service {
         int resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, 0);
         Intent parcelableExtra = intent.getParcelableExtra(EXTRA_RESULT_INTENT);
         MediaProjection mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, parcelableExtra);
-        mediaProjection.createVirtualDisplay("screen-mirror",
+        VirtualDisplay virtualDisplay = mediaProjection.createVirtualDisplay("screen-mirror",
                 screenMetrics.widthPixels, screenMetrics.heightPixels, screenMetrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                imageReader.getSurface(), null, null);
-        new Handler(Looper.getMainLooper()).postDelayed(() -> {
+                surface, null, null);
+        isCaptured = false;
+        imageReader.setOnImageAvailableListener(reader -> {
+            if (isCaptured) {
+                return;
+            }
+            isCaptured = true;
             Bitmap bitmap = this.getBitmap(imageReader);
             if (bitmap != null) {
+                Log.d(TAG, "get bitmap size:" + bitmap.getByteCount());
                 this.writeFile(bitmap);
                 //TODO OCR
                 this.openOCRResultView("ocr string");
             }
+            virtualDisplay.release();
             mediaProjection.stop();
-        }, 0);
+        }, new Handler(Looper.getMainLooper()));
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -212,6 +231,7 @@ public class ScreenCapService extends Service {
         return bitmap;
     }
 
+
     /**
      * 切指定位置bitMap
      *
@@ -266,7 +286,8 @@ public class ScreenCapService extends Service {
 
     @Override
     public void onDestroy() {
-        imageReader.getSurface().release();
+        surface.release();
+        imageReader.close();
         destroyCheckStatusBarView();
         super.onDestroy();
     }
