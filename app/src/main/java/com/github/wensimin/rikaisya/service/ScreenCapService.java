@@ -1,9 +1,13 @@
 package com.github.wensimin.rikaisya.service;
 
 import android.annotation.SuppressLint;
+import android.app.AlertDialog;
 import android.app.Service;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.graphics.Bitmap;
 import android.graphics.PixelFormat;
 import android.graphics.Rect;
@@ -13,23 +17,19 @@ import android.media.Image;
 import android.media.ImageReader;
 import android.media.projection.MediaProjection;
 import android.media.projection.MediaProjectionManager;
-import android.net.Uri;
-import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.preference.PreferenceManager;
-import android.util.Base64;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Surface;
 import android.view.View;
+import android.view.Window;
 import android.view.WindowManager;
-import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
-import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.Switch;
 import android.widget.TextView;
@@ -38,12 +38,10 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 
 import com.github.wensimin.rikaisya.R;
+import com.github.wensimin.rikaisya.utils.OCRUtils;
 import com.github.wensimin.rikaisya.utils.SystemUtils;
 import com.github.wensimin.rikaisya.view.CaptureView;
 
-import java.io.ByteArrayOutputStream;
-import java.io.File;
-import java.io.FileOutputStream;
 import java.nio.ByteBuffer;
 
 import static android.content.ContentValues.TAG;
@@ -68,6 +66,8 @@ public class ScreenCapService extends Service {
      */
     private View checkStatusBarView;
     private boolean isCaptured = false;
+    private ClipboardManager clipboardManager;
+    private SharedPreferences preferences;
 
     @Nullable
     @Override
@@ -84,6 +84,10 @@ public class ScreenCapService extends Service {
         initCheckStatusBarView();
         screenMetrics = new DisplayMetrics();
         mediaProjectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
+        clipboardManager = (ClipboardManager)
+                getSystemService(Context.CLIPBOARD_SERVICE);
+        preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
     }
 
     @SuppressLint("WrongConstant")
@@ -112,9 +116,19 @@ public class ScreenCapService extends Service {
             Bitmap bitmap = this.getBitmap(imageReader);
             if (bitmap != null) {
                 Log.d(TAG, "get bitmap size:" + bitmap.getByteCount());
-                this.writeFile(bitmap);
-                //TODO OCR
-                this.openOCRResultView("ocr string");
+                //TODO delete 不写入
+//                this.writeFile(bitmap);
+                OCRUtils.getInstance(
+                        preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_API), null),
+                        preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_Secret), null)
+                ).readBitmap(bitmap, result -> {
+                    if (result.getErrorCode() != OCRUtils.OCRResult.SUCCESS_CODE) {
+                        Toast.makeText(getApplicationContext(), "OCR识别失败，请重试或检查配置", Toast.LENGTH_LONG).show();
+                        Log.e(TAG, "ocr error" + result.getErrorMsg());
+                    } else {
+                        this.openOCRResultView(result.getAllWords());
+                    }
+                });
             }
             virtualDisplay.release();
             mediaProjection.stop();
@@ -130,8 +144,7 @@ public class ScreenCapService extends Service {
         initOCRResultView(layout, OCRResult);
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-//        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | WindowManager.LayoutParams.FLAG_ALT_FOCUSABLE_IM;
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_FULLSCREEN;
+        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
         layoutParams.format = PixelFormat.TRANSLUCENT;
         layoutParams.gravity = Gravity.START | Gravity.TOP;
         layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
@@ -146,79 +159,96 @@ public class ScreenCapService extends Service {
      * @param OCRResult ocr结果
      */
     private void initOCRResultView(FrameLayout layout, String OCRResult) {
-        EditText sourceText = layout.findViewById(R.id.sourceText);
+        TextView sourceText = layout.findViewById(R.id.sourceText);
         sourceText.setText(OCRResult);
-        setSourceTextEnabled(sourceText, false);
         @SuppressLint("UseSwitchCompatOrMaterialCode") Switch transitionSwitch = layout.findViewById(R.id.transitionSwitch);
         transitionSwitch.setEnabled(false);
         TextView resultText = layout.findViewById(R.id.resultText);
-        //TODO 翻译
-        resultText.setText("翻译结果翻译结果");
+        resultText.setText(this.transition(OCRResult));
         Button cancelButton = layout.findViewById(R.id.cancelButton);
         cancelButton.setOnClickListener(v -> SystemUtils.removeView(windowManager, layout));
-        resultText.setOnClickListener(v -> {
-            Log.d(TAG, "resultText click");
-        });
-        sourceText.setOnClickListener(v -> {
-            Log.d(TAG, "sourceText click");
-        });
+        View.OnClickListener copyListener = v -> {
+            TextView view = (TextView) v;
+            Log.d(TAG, "copy:" + view.getText());
+            Toast.makeText(getApplication(), "copy:" + view.getText(), Toast.LENGTH_LONG).show();
+            clipboardManager.setPrimaryClip(ClipData.newPlainText(null, view.getText()));
+        };
+        resultText.setOnClickListener(copyListener);
+        sourceText.setOnClickListener(copyListener);
         Button editButton = layout.findViewById(R.id.editButton);
-        Button confirmButton = layout.findViewById(R.id.confirmButton);
-        editButton.setOnClickListener(v -> {
-            editButton.setVisibility(View.GONE);
-            confirmButton.setVisibility(View.VISIBLE);
-            setSourceTextEnabled(sourceText, true);
-
-        });
-        confirmButton.setOnClickListener(v -> {
-            confirmButton.setVisibility(View.GONE);
-            editButton.setVisibility(View.VISIBLE);
-            setSourceTextEnabled(sourceText, false);
-
-            //TODO 翻译
-        });
+        editButton.setOnClickListener(v -> createEditDialog(sourceText, resultText));
     }
 
-    private void setSourceTextEnabled(EditText sourceText, boolean enable) {
-        sourceText.setFocusable(enable);
-        sourceText.setCursorVisible(enable);
-        sourceText.setClickable(!enable);
-        if (enable) {
-//            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-//            imm.showSoftInput(sourceText, InputMethodManager.SHOW_FORCED);
-            sourceText.requestFocus();
-        }
+    /**
+     * 翻译
+     *
+     * @param sourceText 输入text
+     * @return 结果text
+     */
+    private String transition(CharSequence sourceText) {
+        // TODO 翻译
+        return sourceText + ":翻译结果";
+    }
+
+    private void createEditDialog(TextView sourceText, TextView resultText) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
+        builder.setTitle(R.string.editDialogTitle);
+        FrameLayout layout = (FrameLayout) LayoutInflater.from(getApplicationContext()).inflate(R.layout.ocr_edit_dialog, new FrameLayout(getApplicationContext()), true);
+        TextView ocrEdit = layout.findViewById(R.id.OCREdit);
+        ocrEdit.setText(sourceText.getText());
+        builder.setView(layout);
+        builder.setPositiveButton(R.string.ok, (dialog, id) -> {
+            // User clicked OK button
+            Log.d(TAG, "ocr dialog ok ");
+            sourceText.setText(ocrEdit.getText());
+            resultText.setText(transition(sourceText.getText()));
+        });
+        builder.setNegativeButton(R.string.cancel, (dialog, id) -> Log.d(TAG, "ocr dialog cancel "));
+        AlertDialog alertDialog = builder.create();
+        Window window = alertDialog.getWindow();
+        window.setType(WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY);
+        // 进入编辑状态会弹出状态栏等
+        // 使用以下flag可以阻止弹出，但是窗口不会自适应
+//        window.setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+        alertDialog.show();
+//        window.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
+//                | View.SYSTEM_UI_FLAG_FULLSCREEN
+//                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+//                | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
+//                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
+//                | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+//        window.clearFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
     }
 
     private boolean checkIsOver(DisplayMetrics screenMetrics, Rect rect) {
         return rect.left < 0 || rect.right > screenMetrics.widthPixels || rect.top < 0 || rect.bottom > screenMetrics.heightPixels;
     }
-
-    private void writeFile(Bitmap bitmap) {
-        try {
-//                    File fileImage = new File(getCacheDir().getPath() + "/test.png");
-            // TODO delete and switch private storage
-            File fileImage = new File(Environment.getExternalStorageDirectory().getPath() + "/Pictures/test.png");
-            Log.d(TAG, "filePath:" + fileImage.getPath());
-            if (!fileImage.exists()) {
-                boolean newFile = fileImage.createNewFile();
-                if (!newFile) {
-                    Log.e(TAG, "cap image: create file err");
-                }
-            }
-            FileOutputStream out = new FileOutputStream(fileImage, false);
-            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-            out.flush();
-            out.close();
-            Log.d(TAG, "writeFile: end");
-            Intent media = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-            Uri contentUri = Uri.fromFile(fileImage);
-            media.setData(contentUri);
-            this.sendBroadcast(media);
-        } catch (Exception e) {
-            Log.e(TAG, "onActivityResult: " + e.getLocalizedMessage());
-        }
-    }
+//
+//    private void writeFile(Bitmap bitmap) {
+//        try {
+////                    File fileImage = new File(getCacheDir().getPath() + "/test.png");
+//            // TODO delete and switch private storage
+//            File fileImage = new File(Environment.getExternalStorageDirectory().getPath() + "/Pictures/test.png");
+//            Log.d(TAG, "filePath:" + fileImage.getPath());
+//            if (!fileImage.exists()) {
+//                boolean newFile = fileImage.createNewFile();
+//                if (!newFile) {
+//                    Log.e(TAG, "cap image: create file err");
+//                }
+//            }
+//            FileOutputStream out = new FileOutputStream(fileImage, false);
+//            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
+//            out.flush();
+//            out.close();
+//            Log.d(TAG, "writeFile: end");
+//            Intent media = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
+//            Uri contentUri = Uri.fromFile(fileImage);
+//            media.setData(contentUri);
+//            this.sendBroadcast(media);
+//        } catch (Exception e) {
+//            Log.e(TAG, "onActivityResult: " + e.getLocalizedMessage());
+//        }
+//    }
 
     /**
      * 从imageReader 获取bitmap

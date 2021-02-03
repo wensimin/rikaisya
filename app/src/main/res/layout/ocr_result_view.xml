@@ -11,25 +11,22 @@
         android:paddingStart="20dp"
         android:paddingEnd="20dp">
 
-        <EditText
+        <TextView
             android:id="@+id/sourceText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
-            android:autofillHints="no"
-            android:inputType="textMultiLine"
-            android:paddingTop="30dp"
+            android:layout_marginTop="30dp"
             android:textAlignment="center"
-            android:textColor="@color/floatViewText"
-            tools:ignore="LabelFor" />
+            android:textColor="@color/floatViewText"/>
 
         <Switch
             android:id="@+id/transitionSwitch"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:layout_gravity="end"
-            android:paddingTop="15dp"
-            android:paddingBottom="15dp"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
             android:text="@string/autoTransitionSwitch"
             android:textAlignment="viewEnd"
             android:textColor="@color/floatViewText"
@@ -47,9 +44,9 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:paddingStart="10dp"
-            android:paddingTop="30dp"
+            android:layout_marginTop="30dp"
             android:paddingEnd="10dp"
-            android:paddingBottom="30dp">
+            android:layout_marginBottom="30dp">
 
             <Button
                 android:id="@+id/editButton"
@@ -61,16 +58,6 @@
                 android:text="@string/edit"
                 android:textColor="@color/floatViewText" />
 
-            <Button
-                android:id="@+id/confirmButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_gravity="start"
-                android:layout_weight="45"
-                android:gravity="center"
-                android:visibility="gone"
-                android:text="@string/confirm"
-                android:textColor="@color/floatViewText" />
 
             <View
                 android:layout_width="0dp"

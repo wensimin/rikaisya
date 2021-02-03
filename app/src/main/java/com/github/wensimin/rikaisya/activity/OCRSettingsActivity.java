@@ -3,8 +3,9 @@ package com.github.wensimin.rikaisya.activity;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.ActionBar;
@@ -12,6 +13,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.preference.PreferenceFragmentCompat;
 
 import com.github.wensimin.rikaisya.R;
+import com.github.wensimin.rikaisya.utils.OCRUtils;
 
 public class OCRSettingsActivity extends AppCompatActivity {
 
@@ -39,6 +41,20 @@ public class OCRSettingsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
+    /**
+     * 验证设置
+     */
+    public void checkConfig(View view) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+        String baiduApi = preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_API), null);
+        String baiduSecret = preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_Secret), null);
+        String tencentId = preferences.getString(getResources().getString(R.string.tencent_translate_id), null);
+        String tencentKey = preferences.getString(getResources().getString(R.string.tencent_translate_key), null);
+        // TODO checkConfig
+        OCRUtils.getInstance(baiduApi, baiduSecret, true);
+        Toast.makeText(this, "检查config结果", Toast.LENGTH_LONG).show();
+    }
+
     public static class SettingsFragment extends PreferenceFragmentCompat {
         @Override
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
@@ -48,20 +64,7 @@ public class OCRSettingsActivity extends AppCompatActivity {
 
     @Override
     public void finish() {
-        this.checkAndSaveConfig();
         super.finish();
     }
 
-    /**
-     * 保存和验证设置
-     */
-    private void checkAndSaveConfig() {
-        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
-        String baiduApi = preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_API), null);
-        String baiduSecret = preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_Secret), null);
-        String tencentId = preferences.getString(getResources().getString(R.string.tencent_translate_id), null);
-        String tencentKey = preferences.getString(getResources().getString(R.string.tencent_translate_key), null);
-        //TODO 验证数据有效性
-        Log.d("", "checkAndSaveConfig: 1");
-    }
 }

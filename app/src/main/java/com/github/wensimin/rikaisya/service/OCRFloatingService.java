@@ -77,6 +77,7 @@ public class OCRFloatingService extends Service {
      * 开始进行屏幕截图
      *
      * @param view ocr按钮view
+     * TODO lock
      */
     private void startCapture(View view) {
         FrameLayout layout = (FrameLayout) LayoutInflater.from(getApplicationContext()).inflate(R.layout.capture, new FrameLayout(getApplicationContext()), false);
@@ -120,6 +121,7 @@ public class OCRFloatingService extends Service {
     @Override
     public void onDestroy() {
         SystemUtils.removeView(windowManager, OCRButton);
+        stopService(new Intent(this, ScreenCapService.class));
         super.onDestroy();
     }
 
@@ -142,6 +144,7 @@ public class OCRFloatingService extends Service {
         OCRTouchListener(WindowManager windowManager, Runnable longPressEvent) {
             this.windowManager = windowManager;
             this.longPressEvent = () -> {
+                //TODO 长按事件优化，手机上较难触发
                 longPressEvent.run();
                 longClicked = true;
             };

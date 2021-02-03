@@ -17,6 +17,10 @@
     <string name="quit">退出</string>
     <string name="autoTransitionSwitch">自动翻译开关</string>
     <string name="confirm">确认</string>
+    <string name="editDialogTitle">编辑ocr结果</string>
+    <string name="ok">确定</string>
+    <string name="cancel">取消</string>
+    <string name="checkConfig">检查配置</string>
 
 
 </resources>
