@@ -55,7 +55,6 @@ public class OCRUtils {
     public static class OCRResult {
         private int errorCode;
         private String errorMsg;
-        private int wordsNum;
         private String[] wordsList;
 
         public static int SUCCESS_CODE = 0;
@@ -66,7 +65,7 @@ public class OCRUtils {
                     errorCode = jsonObject.getInt("error_code");
                     errorMsg = jsonObject.getString("error_msg");
                 } else {
-                    wordsNum = jsonObject.getInt("words_result_num");
+                    int wordsNum = jsonObject.getInt("words_result_num");
                     wordsList = new String[wordsNum];
                     JSONArray jsonArray = jsonObject.getJSONArray("words_result");
                     for (int i = 0; i < wordsList.length; i++) {

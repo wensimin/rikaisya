@@ -40,6 +40,7 @@ import androidx.annotation.Nullable;
 import com.github.wensimin.rikaisya.R;
 import com.github.wensimin.rikaisya.utils.OCRUtils;
 import com.github.wensimin.rikaisya.utils.SystemUtils;
+import com.github.wensimin.rikaisya.utils.TransitionUtils;
 import com.github.wensimin.rikaisya.view.CaptureView;
 
 import java.nio.ByteBuffer;
@@ -54,6 +55,8 @@ import static android.content.ContentValues.TAG;
 public class ScreenCapService extends Service {
     public static final String EXTRA_RESULT_INTENT = "EXTRA_RESULT_INTENT";
     public static final String EXTRA_RESULT_CODE = "EXTRA_RESULT_CODE";
+    private static final String TRANSITION_SWITCH_STATUS = "TRANSITION_SWITCH_STATUS";
+
 
     private DisplayMetrics screenMetrics;
     private MediaProjectionManager mediaProjectionManager;
@@ -159,12 +162,13 @@ public class ScreenCapService extends Service {
      * @param OCRResult ocr结果
      */
     private void initOCRResultView(FrameLayout layout, String OCRResult) {
+        // OCR结果text
         TextView sourceText = layout.findViewById(R.id.sourceText);
         sourceText.setText(OCRResult);
-        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch transitionSwitch = layout.findViewById(R.id.transitionSwitch);
-        transitionSwitch.setEnabled(false);
         TextView resultText = layout.findViewById(R.id.resultText);
-        resultText.setText(this.transition(OCRResult));
+        // 自动翻译按钮
+        this.initTransitionSwitch(layout, resultText, sourceText);
+        // 取消按钮
         Button cancelButton = layout.findViewById(R.id.cancelButton);
         cancelButton.setOnClickListener(v -> SystemUtils.removeView(windowManager, layout));
         View.OnClickListener copyListener = v -> {
@@ -180,16 +184,64 @@ public class ScreenCapService extends Service {
     }
 
     /**
+     * 初始化 自动翻译开关
+     *
+     * @param layout     布局
+     * @param resultText 结果text
+     * @param sourceText 原文text
+     */
+    private void initTransitionSwitch(FrameLayout layout, TextView resultText, TextView sourceText) {
+        // 自动翻译开关
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch transitionSwitch = layout.findViewById(R.id.transitionSwitch);
+        boolean switchStatus = preferences.getBoolean(TRANSITION_SWITCH_STATUS, false);
+        transitionSwitch.setChecked(switchStatus);
+        transitionSwitch.setOnCheckedChangeListener((v, checked) -> {
+            preferences.edit().putBoolean(TRANSITION_SWITCH_STATUS, checked).apply();
+            this.setTransitionStatus(checked, resultText, sourceText);
+        });
+        this.setTransitionStatus(switchStatus, resultText, sourceText);
+    }
+
+    /**
+     * 设置自动翻译状态
+     *
+     * @param enabled    是否启用
+     * @param resultText 翻译text
+     * @param sourceText 原文text
+     */
+    private void setTransitionStatus(boolean enabled, TextView resultText, TextView sourceText) {
+        if (enabled) {
+            this.transition(sourceText.getText(), result -> {
+                if (result.isError()) {
+                    Toast.makeText(getApplicationContext(), "翻译出现问题,请重试或检查配置", Toast.LENGTH_LONG).show();
+                } else {
+                    resultText.setVisibility(View.VISIBLE);
+                    resultText.setText(result.getText());
+                }
+            });
+        } else {
+            resultText.setVisibility(View.GONE);
+        }
+    }
+
+    /**
      * 翻译
      *
      * @param sourceText 输入text
-     * @return 结果text
      */
-    private String transition(CharSequence sourceText) {
-        // TODO 翻译
-        return sourceText + ":翻译结果";
+    private void transition(CharSequence sourceText, TransitionUtils.TransitionListener listener) {
+        TransitionUtils transitionUtils = TransitionUtils.getInstance(
+                preferences.getString(getResources().getString(R.string.tencent_translate_id), null),
+                preferences.getString(getResources().getString(R.string.tencent_translate_key), null),
+                true);
+        transitionUtils.transition(sourceText.toString(), listener);
     }
 
+    /**
+     * 创建编辑ocr结果dialog
+     * @param sourceText ocr结果text
+     * @param resultText 翻译结果text
+     */
     private void createEditDialog(TextView sourceText, TextView resultText) {
         AlertDialog.Builder builder = new AlertDialog.Builder(getApplicationContext());
         builder.setTitle(R.string.editDialogTitle);
@@ -201,7 +253,7 @@ public class ScreenCapService extends Service {
             // User clicked OK button
             Log.d(TAG, "ocr dialog ok ");
             sourceText.setText(ocrEdit.getText());
-            resultText.setText(transition(sourceText.getText()));
+            setTransitionStatus(true, resultText, sourceText);
         });
         builder.setNegativeButton(R.string.cancel, (dialog, id) -> Log.d(TAG, "ocr dialog cancel "));
         AlertDialog alertDialog = builder.create();
@@ -255,7 +307,6 @@ public class ScreenCapService extends Service {
      *
      * @param imageReader reader
      * @return bitmap
-     * fixme image nullPoint & bitmap dataEmpty
      */
     private Bitmap getBitmap(ImageReader imageReader) {
         Image image = imageReader.acquireNextImage();
