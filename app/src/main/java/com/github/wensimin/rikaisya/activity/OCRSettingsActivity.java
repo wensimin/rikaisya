@@ -43,7 +43,7 @@ public class OCRSettingsActivity extends AppCompatActivity {
     }
 
     /**
-     * 验证设置
+     * 更新设置
      */
     public void updateConfig(View view) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -51,7 +51,6 @@ public class OCRSettingsActivity extends AppCompatActivity {
         String baiduSecret = preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_Secret), null);
         String tencentId = preferences.getString(getResources().getString(R.string.tencent_translate_id), null);
         String tencentKey = preferences.getString(getResources().getString(R.string.tencent_translate_key), null);
-        // TODO checkConfig
         OCRUtils.getInstance(baiduApi, baiduSecret, true);
         TransitionUtils.getInstance(tencentId, tencentKey, true);
         Toast.makeText(this, "已经更新配置信息", Toast.LENGTH_LONG).show();
@@ -62,11 +61,6 @@ public class OCRSettingsActivity extends AppCompatActivity {
         public void onCreatePreferences(Bundle savedInstanceState, String rootKey) {
             setPreferencesFromResource(R.xml.root_preferences, rootKey);
         }
-    }
-
-    @Override
-    public void finish() {
-        super.finish();
     }
 
 }

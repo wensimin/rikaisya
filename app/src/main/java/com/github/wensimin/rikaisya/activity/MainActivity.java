@@ -16,7 +16,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import com.github.wensimin.rikaisya.R;
-import com.github.wensimin.rikaisya.RikaiAdapter;
+import com.github.wensimin.rikaisya.adapter.RikaiAdapter;
 import com.github.wensimin.rikaisya.api.Rikai;
 import com.github.wensimin.rikaisya.api.RikaiUtils;
 import com.github.wensimin.rikaisya.service.RikaiFloatingService;

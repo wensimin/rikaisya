@@ -29,7 +29,7 @@ public class CaptureView extends View {
     private Paint linePaint;
     private static final float DEFAULT_LINE_LENGTH = 300f;
     private static final float MIN_LINE_LENGTH = 100f;
-    private static final int DEFAULT_BUTTON_SIZE = 80;
+    private static final int DEFAULT_BUTTON_SIZE = 120;
     private static final int PADDING = 1;
     public static final String CAP_LEFT_KEY = "CAP_LEFT_KEY";
     public static final String CAP_RIGHT_KEY = "CAP_RIGHT_KEY";
@@ -120,20 +120,20 @@ public class CaptureView extends View {
      */
     private void drawButton(Canvas canvas) {
         int padding = 10;
-        // 默认按钮在上的情况
+        // 默认按钮在下的情况
         int confirmRight = (int) (right - padding);
         int confirmLeft = confirmRight - DEFAULT_BUTTON_SIZE;
         int cancelRight = confirmLeft - padding;
         int cancelLeft = cancelRight - DEFAULT_BUTTON_SIZE;
-        int buttonBottom = (int) (top - padding);
-        int buttonTop = buttonBottom - DEFAULT_BUTTON_SIZE;
-        // 按钮应该下的情况
-        if (buttonTop <= 0) {
-            buttonTop = (int) (bottom + padding);
-            buttonBottom = buttonTop + DEFAULT_BUTTON_SIZE;
+        int buttonTop = (int) (bottom + padding);
+        int buttonBottom = buttonTop + DEFAULT_BUTTON_SIZE;
+        // 按钮应该上的情况
+        if (buttonBottom >= getHeight()) {
+             buttonBottom = (int) (top - padding);
+             buttonTop = buttonBottom - DEFAULT_BUTTON_SIZE;
         }
         // 按钮已经没有外部位置的情况
-        if (buttonBottom >= getHeight()) {
+        if (buttonTop <= 0) {
             buttonBottom = (int) (bottom - padding);
             buttonTop = buttonBottom - DEFAULT_BUTTON_SIZE;
         }
@@ -314,7 +314,7 @@ public class CaptureView extends View {
      * @return boolean
      */
     private boolean inLinePoint(float point, float targetPoint) {
-        float fixValue = 20f;
+        float fixValue = 30f;
         return point <= targetPoint + fixValue && point >= targetPoint - fixValue;
     }
 

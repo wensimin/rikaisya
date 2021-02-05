@@ -9,8 +9,6 @@ import com.tencentcloudapi.tmt.v20180321.TmtClient;
 import com.tencentcloudapi.tmt.v20180321.models.TextTranslateRequest;
 import com.tencentcloudapi.tmt.v20180321.models.TextTranslateResponse;
 
-import org.json.JSONObject;
-
 public class TransitionUtils {
     private static TransitionUtils instance;
     private final TmtClient tmtClient;

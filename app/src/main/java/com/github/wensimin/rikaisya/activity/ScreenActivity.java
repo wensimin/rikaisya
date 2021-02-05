@@ -11,7 +11,7 @@ import androidx.activity.result.ActivityResultLauncher;
 import androidx.annotation.Nullable;
 
 import com.github.wensimin.rikaisya.contract.ScreenCaptureContract;
-import com.github.wensimin.rikaisya.service.ScreenCapService;
+import com.github.wensimin.rikaisya.service.OCRResultService;
 
 import java.lang.reflect.Field;
 
@@ -22,14 +22,6 @@ public class ScreenActivity extends ComponentActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL, WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL);
-//        getWindow().setFlags(WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE, WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE);
-//        Window window = this.getWindow();
-//        WindowManager.LayoutParams p = window.getAttributes(); // 获取对话框当前的参数值
-//        p.height = 0; // 高度设置为0
-//        p.width = 0;//宽0
-//        p.gravity = Gravity.CENTER;
-//        window.setAttributes(p);
         this.startCapture();
     }
 
@@ -40,9 +32,9 @@ public class ScreenActivity extends ComponentActivity {
         ActivityResultLauncher<Integer> integerActivityResultLauncher = registerForActivityResult(new ScreenCaptureContract(mediaProjectionManager),
                 result -> {
                     if (result != null) {
-                        Intent i = new Intent(this, ScreenCapService.class)
-                                .putExtra(ScreenCapService.EXTRA_RESULT_INTENT, result)
-                                .putExtra(ScreenCapService.EXTRA_RESULT_CODE, RESULT_OK);
+                        Intent i = new Intent(this, OCRResultService.class)
+                                .putExtra(OCRResultService.EXTRA_RESULT_INTENT, result)
+                                .putExtra(OCRResultService.EXTRA_RESULT_CODE, RESULT_OK);
                         startService(i);
                     }
                     finish();

@@ -1,58 +1,43 @@
-package com.github.wensimin.rikaisya.service;
+package com.github.wensimin.rikaisya.adapter;
 
-import android.app.Service;
 import android.content.ClipboardManager;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Handler;
-import android.os.IBinder;
-import android.os.Looper;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.FrameLayout;
 
-import androidx.annotation.Nullable;
-
-import com.github.wensimin.rikaisya.activity.MainActivity;
 import com.github.wensimin.rikaisya.R;
+import com.github.wensimin.rikaisya.activity.MainActivity;
+
+import java.util.Objects;
 
 /**
- * 浮动窗服务
- * TODO 服务会被杀，寻求替代方法
+ * 剪贴板监听rikai listener
  */
-public class RikaiFloatingService extends Service {
-    private final Handler mDelayHandler = new Handler(Looper.getMainLooper());
+public class RikaiClipChangeListener implements ClipboardManager.OnPrimaryClipChangedListener {
+
+
+    private final Context context;
+    private final WindowManager windowManager;
+    private final Handler mDelayHandler;
     public static final String ACTION_NAME = "RIKAI";
-    private final ClipboardManager.OnPrimaryClipChangedListener listener = this::dialogButton;
     // 是否已经有浮窗状态
     private boolean isFloating = false;
 
-    @Nullable
-    @Override
-    public IBinder onBind(Intent intent) {
-        return null;
+    public RikaiClipChangeListener(Handler mDelayHandler, Context context) {
+        this.context = context;
+        this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
+        this.mDelayHandler = mDelayHandler;
     }
 
-
     @Override
-    public void onCreate() {
-        super.onCreate();
-        // 剪贴板变动时创建按钮
-        ClipboardManager clipboardManager = (ClipboardManager)
-                getSystemService(Context.CLIPBOARD_SERVICE);
-        clipboardManager.addPrimaryClipChangedListener(listener);
-    }
-
-
-    /**
-     * 弹出按钮
-     */
-    private void dialogButton() {
+    public void onPrimaryClipChanged() {
         if (isFloating)
             return;
-        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         // 设置LayoutParam
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
@@ -62,18 +47,19 @@ public class RikaiFloatingService extends Service {
         layoutParams.y = 500;
         layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
-        View floatView = LayoutInflater.from(getApplicationContext()).inflate(R.layout.rikai_btn, new FrameLayout(getApplicationContext()), false);
+        View floatView = LayoutInflater.from(context).inflate(R.layout.rikai_btn, new FrameLayout(context), false);
         floatView.setOnClickListener(view -> {
             this.deleteFloatView(floatView, 0);
-            Intent intent = new Intent(getBaseContext(), MainActivity.class);
+            Intent intent = new Intent(context, MainActivity.class);
             intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra(ACTION_NAME, true);
-            getApplication().startActivity(intent);
+            context.startActivity(intent);
         });
         windowManager.addView(floatView, layoutParams);
         isFloating = true;
         this.deleteFloatView(floatView, 5 * 1000);
     }
+
 
     /**
      * 删除floatView
@@ -82,23 +68,12 @@ public class RikaiFloatingService extends Service {
      * @param time      time ms
      */
     private void deleteFloatView(View floatView, int time) {
-        WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mDelayHandler.postDelayed(() -> {
             if (floatView.isShown()) {
                 windowManager.removeView(floatView);
                 isFloating = false;
             }
         }, time);
-    }
-
-
-    @Override
-    public void onDestroy() {
-        ClipboardManager clipboardManager = (ClipboardManager)
-                getSystemService(Context.CLIPBOARD_SERVICE);
-//        clipboardManager.removePrimaryClipChangedListener(listener);
-        mDelayHandler.removeCallbacksAndMessages(null);
-        super.onDestroy();
     }
 
 }

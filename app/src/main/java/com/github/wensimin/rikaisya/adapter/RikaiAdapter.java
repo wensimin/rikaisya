@@ -1,4 +1,4 @@
-package com.github.wensimin.rikaisya;
+package com.github.wensimin.rikaisya.adapter;
 
 import android.content.ClipData;
 import android.content.ClipboardManager;
@@ -16,6 +16,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import com.github.wensimin.rikaisya.R;
 import com.github.wensimin.rikaisya.api.Rikai;
 import com.github.wensimin.rikaisya.api.RikaiType;
 

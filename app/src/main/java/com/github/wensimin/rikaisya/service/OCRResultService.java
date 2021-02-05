@@ -25,6 +25,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.Window;
@@ -46,13 +47,15 @@ import com.github.wensimin.rikaisya.view.CaptureView;
 import java.nio.ByteBuffer;
 
 import static android.content.ContentValues.TAG;
+import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
+import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
 
 /**
  * 截图service
  * 进行截图&后续ocr
  * TODO 性能优化
  */
-public class ScreenCapService extends Service {
+public class OCRResultService extends Service {
     public static final String EXTRA_RESULT_INTENT = "EXTRA_RESULT_INTENT";
     public static final String EXTRA_RESULT_CODE = "EXTRA_RESULT_CODE";
     private static final String TRANSITION_SWITCH_STATUS = "TRANSITION_SWITCH_STATUS";
@@ -119,8 +122,6 @@ public class ScreenCapService extends Service {
             Bitmap bitmap = this.getBitmap(imageReader);
             if (bitmap != null) {
                 Log.d(TAG, "get bitmap size:" + bitmap.getByteCount());
-                //TODO delete 不写入
-//                this.writeFile(bitmap);
                 OCRUtils.getInstance(
                         preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_API), null),
                         preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_Secret), null)
@@ -142,17 +143,24 @@ public class ScreenCapService extends Service {
     /**
      * 打开OCR结果窗口
      */
+    @SuppressLint("ClickableViewAccessibility")
     private void openOCRResultView(String OCRResult) {
         FrameLayout layout = (FrameLayout) LayoutInflater.from(getApplicationContext()).inflate(R.layout.ocr_result_view, new FrameLayout(getApplicationContext()), true);
         initOCRResultView(layout, OCRResult);
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
+        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | FLAG_NOT_TOUCH_MODAL | FLAG_WATCH_OUTSIDE_TOUCH;
         layoutParams.format = PixelFormat.TRANSLUCENT;
         layoutParams.gravity = Gravity.START | Gravity.TOP;
         layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
         SystemUtils.addView(windowManager, layout, layoutParams);
+        layout.setOnTouchListener((v, event) -> {
+            if (event.getActionMasked() == MotionEvent.ACTION_OUTSIDE) {
+                SystemUtils.removeView(windowManager, layout);
+            }
+            return v.onTouchEvent(event);
+        });
     }
 
     /**
@@ -171,14 +179,15 @@ public class ScreenCapService extends Service {
         // 取消按钮
         Button cancelButton = layout.findViewById(R.id.cancelButton);
         cancelButton.setOnClickListener(v -> SystemUtils.removeView(windowManager, layout));
-        View.OnClickListener copyListener = v -> {
+        View.OnLongClickListener copyListener = v -> {
             TextView view = (TextView) v;
             Log.d(TAG, "copy:" + view.getText());
             Toast.makeText(getApplication(), "copy:" + view.getText(), Toast.LENGTH_LONG).show();
             clipboardManager.setPrimaryClip(ClipData.newPlainText(null, view.getText()));
+            return true;
         };
-        resultText.setOnClickListener(copyListener);
-        sourceText.setOnClickListener(copyListener);
+        resultText.setOnLongClickListener(copyListener);
+        sourceText.setOnLongClickListener(copyListener);
         Button editButton = layout.findViewById(R.id.editButton);
         editButton.setOnClickListener(v -> createEditDialog(sourceText, resultText));
     }
@@ -239,6 +248,7 @@ public class ScreenCapService extends Service {
 
     /**
      * 创建编辑ocr结果dialog
+     *
      * @param sourceText ocr结果text
      * @param resultText 翻译结果text
      */
@@ -275,32 +285,7 @@ public class ScreenCapService extends Service {
     private boolean checkIsOver(DisplayMetrics screenMetrics, Rect rect) {
         return rect.left < 0 || rect.right > screenMetrics.widthPixels || rect.top < 0 || rect.bottom > screenMetrics.heightPixels;
     }
-//
-//    private void writeFile(Bitmap bitmap) {
-//        try {
-////                    File fileImage = new File(getCacheDir().getPath() + "/test.png");
-//            // TODO delete and switch private storage
-//            File fileImage = new File(Environment.getExternalStorageDirectory().getPath() + "/Pictures/test.png");
-//            Log.d(TAG, "filePath:" + fileImage.getPath());
-//            if (!fileImage.exists()) {
-//                boolean newFile = fileImage.createNewFile();
-//                if (!newFile) {
-//                    Log.e(TAG, "cap image: create file err");
-//                }
-//            }
-//            FileOutputStream out = new FileOutputStream(fileImage, false);
-//            bitmap.compress(Bitmap.CompressFormat.PNG, 100, out);
-//            out.flush();
-//            out.close();
-//            Log.d(TAG, "writeFile: end");
-//            Intent media = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE);
-//            Uri contentUri = Uri.fromFile(fileImage);
-//            media.setData(contentUri);
-//            this.sendBroadcast(media);
-//        } catch (Exception e) {
-//            Log.e(TAG, "onActivityResult: " + e.getLocalizedMessage());
-//        }
-//    }
+
 
     /**
      * 从imageReader 获取bitmap

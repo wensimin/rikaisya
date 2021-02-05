@@ -11,7 +11,6 @@ public class OCRTile extends TileService {
 
     @Override
     public void onTileAdded() {
-        // TODO 进行是否账号设置完成，未完成则使用未启用状态
         super.onTileAdded();
         Tile tile = getQsTile();
         tile.setState(Tile.STATE_INACTIVE);

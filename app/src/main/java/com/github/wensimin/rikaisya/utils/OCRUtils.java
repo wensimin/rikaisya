@@ -57,7 +57,7 @@ public class OCRUtils {
         private String errorMsg;
         private String[] wordsList;
 
-        public static int SUCCESS_CODE = 0;
+        public static final int SUCCESS_CODE = 0;
 
         public OCRResult(JSONObject jsonObject) {
             try {
@@ -80,7 +80,10 @@ public class OCRUtils {
         public String getAllWords() {
             StringBuilder sb = new StringBuilder();
             for (String s : wordsList) {
-                sb.append(s).append("\n");
+                if (!sb.toString().isEmpty()) {
+                    sb.append("\n");
+                }
+                sb.append(s);
             }
             return sb.toString();
         }
