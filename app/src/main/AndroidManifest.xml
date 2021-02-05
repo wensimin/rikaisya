@@ -37,15 +37,6 @@
         <service android:name=".service.OCRFloatingService" />
         <service android:name=".service.OCRResultService" />
         <service
-            android:name=".service.RikaiTile"
-            android:icon="@drawable/quick_setting"
-            android:label="@string/rikai_quick"
-            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
-            <intent-filter>
-                <action android:name="android.service.quicksettings.action.QS_TILE" />
-            </intent-filter>
-        </service>
-        <service
             android:name=".service.OCRTile"
             android:icon="@drawable/ocr_setting"
             android:label="@string/ocr_quick"

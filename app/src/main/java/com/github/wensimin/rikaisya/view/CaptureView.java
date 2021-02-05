@@ -191,7 +191,7 @@ public class CaptureView extends View {
         }
         if (isClickButton(startX, startY, confirmRect)) {
             this.savePos();
-            this.listener.confirm(left, right, top, bottom);
+            this.listener.confirm();
         }
         if (isClickButton(startX, startY, cancelRect)) {
             this.listener.cancel();
@@ -368,7 +368,7 @@ public class CaptureView extends View {
     }
 
     public interface ResListener {
-        void confirm(float left, float right, float top, float bottom);
+        void confirm();
 
         void cancel();
     }

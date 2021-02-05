@@ -20,7 +20,6 @@ import com.github.wensimin.rikaisya.R;
 
 /**
  * 浮动窗服务
- * TODO 服务会被杀，寻求替代方法
  */
 public class RikaiFloatingService extends Service {
     private final Handler mDelayHandler = new Handler(Looper.getMainLooper());
@@ -96,7 +95,7 @@ public class RikaiFloatingService extends Service {
     public void onDestroy() {
         ClipboardManager clipboardManager = (ClipboardManager)
                 getSystemService(Context.CLIPBOARD_SERVICE);
-//        clipboardManager.removePrimaryClipChangedListener(listener);
+        clipboardManager.removePrimaryClipChangedListener(listener);
         mDelayHandler.removeCallbacksAndMessages(null);
         super.onDestroy();
     }

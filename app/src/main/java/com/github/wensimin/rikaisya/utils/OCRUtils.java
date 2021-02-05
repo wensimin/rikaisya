@@ -3,6 +3,7 @@ package com.github.wensimin.rikaisya.utils;
 import android.graphics.Bitmap;
 import android.os.Handler;
 import android.os.Looper;
+import android.util.Log;
 
 import com.baidu.aip.ocr.AipOcr;
 
@@ -12,6 +13,8 @@ import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
 import java.util.HashMap;
+
+import static android.content.ContentValues.TAG;
 
 /**
  * ocr 工具类 单例
@@ -38,6 +41,7 @@ public class OCRUtils {
 
     public void readBitmap(Bitmap bitmap, OCRListener listener) {
         byte[] base64 = bitmap2Bytes(bitmap);
+        Log.d(TAG, "byte size:" + base64.length);
         HashMap<String, String> options = new HashMap<>();
         options.put("detect_language", "true");
         Handler handler = new Handler(Looper.getMainLooper());
@@ -100,7 +104,7 @@ public class OCRUtils {
 
     private byte[] bitmap2Bytes(Bitmap bitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.PNG, 100, byteArrayOutputStream);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
         return byteArrayOutputStream.toByteArray();
     }
 

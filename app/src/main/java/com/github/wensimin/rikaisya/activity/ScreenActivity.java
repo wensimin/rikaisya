@@ -12,6 +12,7 @@ import androidx.annotation.Nullable;
 
 import com.github.wensimin.rikaisya.contract.ScreenCaptureContract;
 import com.github.wensimin.rikaisya.service.OCRResultService;
+import com.github.wensimin.rikaisya.utils.PerformanceTimer;
 
 import java.lang.reflect.Field;
 
@@ -26,12 +27,12 @@ public class ScreenActivity extends ComponentActivity {
     }
 
 
-
     private void startCapture() {
         MediaProjectionManager mediaProjectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
         ActivityResultLauncher<Integer> integerActivityResultLauncher = registerForActivityResult(new ScreenCaptureContract(mediaProjectionManager),
                 result -> {
                     if (result != null) {
+                        Log.d(TAG, "用户允许截图 消耗时间:" + PerformanceTimer.cut());
                         Intent i = new Intent(this, OCRResultService.class)
                                 .putExtra(OCRResultService.EXTRA_RESULT_INTENT, result)
                                 .putExtra(OCRResultService.EXTRA_RESULT_CODE, RESULT_OK);
@@ -44,9 +45,9 @@ public class ScreenActivity extends ComponentActivity {
 
     @Override
     protected void onResume() {
-        // TODO 暴力hack
+        // FIXME 暴力hack
         try {
-            Field mFinished = Activity.class.getDeclaredField("mFinished");
+            @SuppressWarnings("JavaReflectionMemberAccess") Field mFinished = Activity.class.getDeclaredField("mFinished");
             mFinished.setAccessible(true);
             Log.d(TAG, "onResume: mFinished" + mFinished.get(this));
             mFinished.setBoolean(this, true);

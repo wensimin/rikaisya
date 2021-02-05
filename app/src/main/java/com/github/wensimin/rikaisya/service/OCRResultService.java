@@ -21,11 +21,11 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Looper;
 import android.preference.PreferenceManager;
+import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Gravity;
 import android.view.LayoutInflater;
-import android.view.MotionEvent;
 import android.view.Surface;
 import android.view.View;
 import android.view.Window;
@@ -40,6 +40,7 @@ import androidx.annotation.Nullable;
 
 import com.github.wensimin.rikaisya.R;
 import com.github.wensimin.rikaisya.utils.OCRUtils;
+import com.github.wensimin.rikaisya.utils.PerformanceTimer;
 import com.github.wensimin.rikaisya.utils.SystemUtils;
 import com.github.wensimin.rikaisya.utils.TransitionUtils;
 import com.github.wensimin.rikaisya.view.CaptureView;
@@ -47,8 +48,6 @@ import com.github.wensimin.rikaisya.view.CaptureView;
 import java.nio.ByteBuffer;
 
 import static android.content.ContentValues.TAG;
-import static android.view.WindowManager.LayoutParams.FLAG_NOT_TOUCH_MODAL;
-import static android.view.WindowManager.LayoutParams.FLAG_WATCH_OUTSIDE_TOUCH;
 
 /**
  * 截图service
@@ -122,10 +121,12 @@ public class OCRResultService extends Service {
             Bitmap bitmap = this.getBitmap(imageReader);
             if (bitmap != null) {
                 Log.d(TAG, "get bitmap size:" + bitmap.getByteCount());
+                Log.d(TAG, "bitmap生成 消耗时间:" + PerformanceTimer.cut());
                 OCRUtils.getInstance(
                         preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_API), null),
                         preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_Secret), null)
                 ).readBitmap(bitmap, result -> {
+                    Log.d(TAG, "OCR完成 消耗时间:" + PerformanceTimer.cut());
                     if (result.getErrorCode() != OCRUtils.OCRResult.SUCCESS_CODE) {
                         Toast.makeText(getApplicationContext(), "OCR识别失败，请重试或检查配置", Toast.LENGTH_LONG).show();
                         Log.e(TAG, "ocr error" + result.getErrorMsg());
@@ -149,18 +150,15 @@ public class OCRResultService extends Service {
         initOCRResultView(layout, OCRResult);
         WindowManager.LayoutParams layoutParams = new WindowManager.LayoutParams();
         layoutParams.type = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY;
-        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE | FLAG_NOT_TOUCH_MODAL | FLAG_WATCH_OUTSIDE_TOUCH;
+        layoutParams.flags = WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE;
         layoutParams.format = PixelFormat.TRANSLUCENT;
         layoutParams.gravity = Gravity.START | Gravity.TOP;
         layoutParams.width = WindowManager.LayoutParams.MATCH_PARENT;
         layoutParams.height = WindowManager.LayoutParams.WRAP_CONTENT;
         SystemUtils.addView(windowManager, layout, layoutParams);
-        layout.setOnTouchListener((v, event) -> {
-            if (event.getActionMasked() == MotionEvent.ACTION_OUTSIDE) {
-                SystemUtils.removeView(windowManager, layout);
-            }
-            return v.onTouchEvent(event);
-        });
+        Log.d(TAG, "显示view 消耗时间:" + PerformanceTimer.cut());
+        Log.d(TAG, "全部花费时间:" + PerformanceTimer.end());
+
     }
 
     /**
@@ -173,7 +171,9 @@ public class OCRResultService extends Service {
         // OCR结果text
         TextView sourceText = layout.findViewById(R.id.sourceText);
         sourceText.setText(OCRResult);
+        sourceText.setMovementMethod(ScrollingMovementMethod.getInstance());
         TextView resultText = layout.findViewById(R.id.resultText);
+        resultText.setMovementMethod(ScrollingMovementMethod.getInstance());
         // 自动翻译按钮
         this.initTransitionSwitch(layout, resultText, sourceText);
         // 取消按钮
@@ -222,6 +222,7 @@ public class OCRResultService extends Service {
         if (enabled) {
             this.transition(sourceText.getText(), result -> {
                 if (result.isError()) {
+                    Log.w(TAG, String.format("error code:%s,error msg: %s", result.getCode(), result.getMessage()));
                     Toast.makeText(getApplicationContext(), "翻译出现问题,请重试或检查配置", Toast.LENGTH_LONG).show();
                 } else {
                     resultText.setVisibility(View.VISIBLE);

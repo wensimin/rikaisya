@@ -11,7 +11,9 @@
         android:paddingStart="20dp"
         android:paddingEnd="20dp">
 
-        <TextView
+        <com.github.wensimin.rikaisya.view.AlwaysFocusTextView
+            android:maxLines="6"
+            android:scrollbars="vertical"
             android:id="@+id/sourceText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
@@ -32,7 +34,9 @@
             android:textColor="@color/floatViewText"
             tools:ignore="UseSwitchCompatOrMaterialXml" />
 
-        <TextView
+        <com.github.wensimin.rikaisya.view.AlwaysFocusTextView
+            android:maxLines="6"
+            android:scrollbars="vertical"
             android:id="@+id/resultText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"

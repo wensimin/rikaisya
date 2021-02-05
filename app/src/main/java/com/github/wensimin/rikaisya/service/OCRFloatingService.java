@@ -22,6 +22,7 @@ import androidx.annotation.Nullable;
 
 import com.github.wensimin.rikaisya.R;
 import com.github.wensimin.rikaisya.activity.ScreenActivity;
+import com.github.wensimin.rikaisya.utils.PerformanceTimer;
 import com.github.wensimin.rikaisya.utils.SystemUtils;
 import com.github.wensimin.rikaisya.view.CaptureView;
 
@@ -37,6 +38,8 @@ public class OCRFloatingService extends Service {
     private WindowManager.LayoutParams layoutParams;
     private WindowManager windowManager;
     private FrameLayout CapLayout;
+    // 长按判定毫秒
+    private static final int LONG_CLICK_INTERVAL_MS = 500;
     // 下次允许截图的事件
     private long nextTime;
     // 截图间隔秒数
@@ -94,7 +97,7 @@ public class OCRFloatingService extends Service {
         capLayoutParams.format = PixelFormat.TRANSLUCENT;
         captureView.setListener(new CaptureView.ResListener() {
             @Override
-            public void confirm(float left, float right, float top, float bottom) {
+            public void confirm() {
                 SystemUtils.removeView(windowManager, CapLayout);
                 startCapture();
             }
@@ -116,6 +119,8 @@ public class OCRFloatingService extends Service {
             return;
         }
         nextTime = System.currentTimeMillis() + CAP_INTERVAL * 1000;
+        Log.d(TAG, "开始截图");
+        PerformanceTimer.start();
         Intent intent = new Intent(getBaseContext(), ScreenActivity.class);
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         startActivity(intent);
@@ -169,7 +174,7 @@ public class OCRFloatingService extends Service {
                     longClicked = false;
                     startX = x;
                     startY = y;
-                    handler.postDelayed(longPressEvent, 1000);
+                    handler.postDelayed(longPressEvent, LONG_CLICK_INTERVAL_MS);
                     break;
                 case MotionEvent.ACTION_UP:
                     boolean isClick = Math.abs(startX - x) <= 10 && Math.abs(startY - y) <= 10;
@@ -197,7 +202,7 @@ public class OCRFloatingService extends Service {
         }
 
         private boolean moveRangeMini(int x, int y) {
-            int miniRange = 20;
+            int miniRange = 10;
             return Math.abs(startX - x) < miniRange || Math.abs(startY - y) < miniRange;
         }
     }
