@@ -108,11 +108,6 @@ public class MainActivity extends AppCompatActivity {
         acceptAction(this.getIntent());
     }
 
-    @Override
-    public void finish() {
-        stopService(new Intent(this, RikaiFloatingService.class));
-        super.finish();
-    }
 
     /**
      * 接受服务请求

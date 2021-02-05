@@ -12,45 +12,63 @@
         android:paddingEnd="20dp">
 
         <com.github.wensimin.rikaisya.view.AlwaysFocusTextView
-            android:maxLines="6"
-            android:scrollbars="vertical"
             android:id="@+id/sourceText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
             android:layout_marginTop="30dp"
-            android:textAlignment="center"
-            android:textColor="@color/floatViewText"/>
-
-        <Switch
-            android:id="@+id/transitionSwitch"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_gravity="end"
-            android:layout_marginTop="15dp"
-            android:layout_marginBottom="15dp"
-            android:text="@string/autoTransitionSwitch"
-            android:textAlignment="viewEnd"
-            android:textColor="@color/floatViewText"
-            tools:ignore="UseSwitchCompatOrMaterialXml" />
-
-        <com.github.wensimin.rikaisya.view.AlwaysFocusTextView
             android:maxLines="6"
             android:scrollbars="vertical"
+            android:textAlignment="center"
+            android:textColor="@color/floatViewText" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="15dp"
+            android:layout_marginBottom="15dp"
+            android:orientation="horizontal">
+
+            <Switch
+                android:id="@+id/accurateSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="start"
+                android:layout_weight="50"
+                android:text="@string/accurateOCR"
+                android:textAlignment="viewStart"
+                android:textColor="@color/floatViewText"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
+
+            <Switch
+                android:id="@+id/transitionSwitch"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="end"
+                android:layout_weight="50"
+                android:text="@string/autoTransitionSwitch"
+                android:textAlignment="viewEnd"
+                android:textColor="@color/floatViewText"
+                tools:ignore="UseSwitchCompatOrMaterialXml" />
+        </LinearLayout>
+
+        <com.github.wensimin.rikaisya.view.AlwaysFocusTextView
             android:id="@+id/resultText"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_gravity="center"
+            android:layout_marginBottom="30dp"
+            android:maxLines="6"
+            android:scrollbars="vertical"
             android:textAlignment="center"
-            android:textColor="@color/floatViewText"
-            android:layout_marginBottom="30dp"/>
+            android:textColor="@color/floatViewText" />
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
+            android:layout_marginBottom="30dp"
             android:paddingStart="10dp"
-            android:paddingEnd="10dp"
-            android:layout_marginBottom="30dp">
+            android:paddingEnd="10dp">
 
             <Button
                 android:id="@+id/editButton"

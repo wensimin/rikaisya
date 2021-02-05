@@ -44,6 +44,7 @@ public class OCRUtils {
         Log.d(TAG, "byte size:" + base64.length);
         HashMap<String, String> options = new HashMap<>();
         options.put("detect_language", "true");
+        options.put("detect_direction", "true");
         Handler handler = new Handler(Looper.getMainLooper());
         new Thread(() -> {
             JSONObject jsonObject = aipOcr.basicGeneral(base64, options);
