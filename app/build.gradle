@@ -43,7 +43,7 @@ dependencies {
     implementation 'com.tencentcloudapi:tencentcloud-sdk-java:4.0.11'
     implementation group: 'xerces', name: 'xercesImpl', version: '2.12.1'
     implementation 'androidx.preference:preference:1.1.1'
-    testImplementation 'junit:junit:4.12'
+    testImplementation 'junit:junit:4.13.1'
     androidTestImplementation 'androidx.test.ext:junit:1.1.2'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 

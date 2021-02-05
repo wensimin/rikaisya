@@ -12,6 +12,10 @@ import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContract;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
@@ -41,9 +45,33 @@ public class MainActivity extends AppCompatActivity {
         button.setOnClickListener(b -> this.rikai());
         // 服务权限
         if (!Settings.canDrawOverlays(this)) {
+
             Toast.makeText(this, "当前无权限，请授权", Toast.LENGTH_SHORT).show();
-            startActivityForResult(new Intent(Settings.ACTION_MANAGE_OVERLAY_PERMISSION, Uri.parse("package:" + getPackageName())), 0);
+            ActivityResultLauncher<String> launcher = registerForActivityResult(new ActivityResultContract<String, Boolean>() {
+                @NonNull
+                @Override
+                public Intent createIntent(@NonNull Context context, String input) {
+                    return new Intent(input, Uri.parse("package:" + getPackageName()));
+                }
+
+                @Override
+                public Boolean parseResult(int resultCode, @Nullable Intent intent) {
+                    return resultCode == 0;
+                }
+            }, result -> {
+                if (result) {
+                    if (!Settings.canDrawOverlays(this)) {
+                        Toast.makeText(this, "授权失败", Toast.LENGTH_SHORT).show();
+                    } else {
+                        Toast.makeText(this, "授权成功", Toast.LENGTH_SHORT).show();
+                        startService(new Intent(MainActivity.this, RikaiFloatingService.class));
+                    }
+                }
+            });
+            launcher.launch(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
         }
+        // 开启监听剪贴板服务
+        startService(new Intent(this, RikaiFloatingService.class));
     }
 
     /**
@@ -80,6 +108,12 @@ public class MainActivity extends AppCompatActivity {
         acceptAction(this.getIntent());
     }
 
+    @Override
+    public void finish() {
+        stopService(new Intent(this, RikaiFloatingService.class));
+        super.finish();
+    }
+
     /**
      * 接受服务请求
      */
@@ -91,19 +125,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == 0) {
-            if (!Settings.canDrawOverlays(this)) {
-                Toast.makeText(this, "授权失败", Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(this, "授权成功", Toast.LENGTH_SHORT).show();
-                startService(new Intent(MainActivity.this, RikaiFloatingService.class));
-            }
-        }
-    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
