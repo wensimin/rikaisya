@@ -27,6 +27,7 @@ import com.github.wensimin.rikaisya.utils.SystemUtils;
 import com.github.wensimin.rikaisya.view.CaptureView;
 
 import static android.content.ContentValues.TAG;
+import static com.github.wensimin.rikaisya.activity.ScreenActivity.ACTION_CLOSE;
 
 /**
  * ocr service
@@ -137,6 +138,10 @@ public class OCRFloatingService extends Service {
     public void onDestroy() {
         SystemUtils.removeView(windowManager, OCRButton);
         stopService(new Intent(this, OCRResultService.class));
+        Intent intent = new Intent(getBaseContext(), ScreenActivity.class);
+        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
+        intent.putExtra(ACTION_CLOSE,true);
+        startActivity(intent);
         super.onDestroy();
     }
 

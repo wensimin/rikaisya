@@ -37,17 +37,19 @@ public class OCRUtils {
     private OCRUtils(String baiduApi, String baiduSecret) {
         aipOcr = new AipOcr(null, baiduApi, baiduSecret);
         aipOcr.setConnectionTimeoutInMillis(2000);
+        aipOcr.setSocketTimeoutInMillis(5000);
     }
 
     public void readBitmap(Bitmap bitmap, OCRListener listener) {
-        byte[] base64 = bitmap2Bytes(bitmap);
-        Log.d(TAG, "byte size:" + base64.length);
+        byte[] bytes = bitmap2Bytes(bitmap);
+        Log.d(TAG, "byte size:" + bytes.length);
         HashMap<String, String> options = new HashMap<>();
         options.put("detect_language", "true");
         options.put("detect_direction", "true");
         Handler handler = new Handler(Looper.getMainLooper());
         new Thread(() -> {
-            JSONObject jsonObject = aipOcr.basicGeneral(base64, options);
+            Log.d(TAG, "ocr开始 消耗时间:" + PerformanceTimer.cut());
+            JSONObject jsonObject = aipOcr.basicGeneral(bytes, options);
             handler.postDelayed(() -> listener.callback(new OCRResult(jsonObject)), 0);
         }).start();
     }
@@ -58,16 +60,18 @@ public class OCRUtils {
 
 
     public static class OCRResult {
-        private int errorCode;
+        public static final int SUCCESS_CODE = -1;
+
+        private int errorCode = SUCCESS_CODE;
         private String errorMsg;
         private String[] wordsList;
 
-        public static final int SUCCESS_CODE = 0;
 
         public OCRResult(JSONObject jsonObject) {
             try {
                 if (!jsonObject.isNull("error_code")) {
-                    errorCode = jsonObject.getInt("error_code");
+                    Object errorCode = jsonObject.get("error_code");
+                    this.errorCode = errorCode instanceof Integer ? (int) errorCode : 0;
                     errorMsg = jsonObject.getString("error_msg");
                 } else {
                     int wordsNum = jsonObject.getInt("words_result_num");
@@ -105,7 +109,7 @@ public class OCRUtils {
 
     private byte[] bitmap2Bytes(Bitmap bitmap) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 50, byteArrayOutputStream);
+        bitmap.compress(Bitmap.CompressFormat.JPEG, 30, byteArrayOutputStream);
         return byteArrayOutputStream.toByteArray();
     }
 

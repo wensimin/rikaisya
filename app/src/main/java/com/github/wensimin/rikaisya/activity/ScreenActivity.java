@@ -15,15 +15,28 @@ import com.github.wensimin.rikaisya.service.OCRResultService;
 import com.github.wensimin.rikaisya.utils.PerformanceTimer;
 
 import java.lang.reflect.Field;
+import java.util.Optional;
 
 import static android.content.ContentValues.TAG;
 
 public class ScreenActivity extends ComponentActivity {
+    public static final String ACTION_CLOSE = "close";
+
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.startCapture();
+        // 只在给定action为close的时候才finish activity
+        // FIXME 待观察是否会有内存泄露
+        boolean close = Optional.ofNullable(getIntent()).
+                map(Intent::getExtras).
+                map(e -> e.getBoolean(ACTION_CLOSE)).
+                orElse(false);
+        if (close) {
+            finish();
+        } else {
+            this.startCapture();
+        }
     }
 
 
@@ -38,7 +51,8 @@ public class ScreenActivity extends ComponentActivity {
                                 .putExtra(OCRResultService.EXTRA_RESULT_CODE, RESULT_OK);
                         startService(i);
                     }
-                    finish();
+                    moveTaskToBack(true);
+//                    finish();
                 });
         integerActivityResultLauncher.launch(null);
     }

@@ -31,21 +31,22 @@
 
             <Switch
                 android:id="@+id/accurateSwitch"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_gravity="start"
-                android:layout_weight="50"
                 android:text="@string/accurateOCR"
                 android:textAlignment="viewStart"
                 android:textColor="@color/floatViewText"
                 tools:ignore="UseSwitchCompatOrMaterialXml" />
-
+            <Space
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"/>
             <Switch
                 android:id="@+id/transitionSwitch"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:layout_weight="50"
                 android:text="@string/autoTransitionSwitch"
                 android:textAlignment="viewEnd"
                 android:textColor="@color/floatViewText"
@@ -80,8 +81,7 @@
                 android:text="@string/edit"
                 android:textColor="@color/floatViewText" />
 
-
-            <View
+            <Space
                 android:layout_width="0dp"
                 android:layout_height="0dp"
                 android:layout_weight="10" />

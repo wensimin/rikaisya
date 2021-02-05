@@ -108,36 +108,39 @@ public class OCRResultService extends Service {
         }
         int resultCode = intent.getIntExtra(EXTRA_RESULT_CODE, 0);
         Intent parcelableExtra = intent.getParcelableExtra(EXTRA_RESULT_INTENT);
-        MediaProjection mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, parcelableExtra);
-        VirtualDisplay virtualDisplay = mediaProjection.createVirtualDisplay("screen-mirror",
-                screenMetrics.widthPixels, screenMetrics.heightPixels, screenMetrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
-                surface, null, null);
-        isCaptured = false;
-        imageReader.setOnImageAvailableListener(reader -> {
-            if (isCaptured) {
-                return;
-            }
-            isCaptured = true;
-            Bitmap bitmap = this.getBitmap(imageReader);
-            if (bitmap != null) {
-                Log.d(TAG, "get bitmap size:" + bitmap.getByteCount());
-                Log.d(TAG, "bitmap生成 消耗时间:" + PerformanceTimer.cut());
-                OCRUtils.getInstance(
-                        preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_API), null),
-                        preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_Secret), null)
-                ).readBitmap(bitmap, result -> {
-                    Log.d(TAG, "OCR完成 消耗时间:" + PerformanceTimer.cut());
-                    if (result.getErrorCode() != OCRUtils.OCRResult.SUCCESS_CODE) {
-                        Toast.makeText(getApplicationContext(), "OCR识别失败，请重试或检查配置", Toast.LENGTH_LONG).show();
-                        Log.e(TAG, "ocr error" + result.getErrorMsg());
-                    } else {
-                        this.openOCRResultView(result.getAllWords());
-                    }
-                });
-            }
-            virtualDisplay.release();
-            mediaProjection.stop();
-        }, new Handler(Looper.getMainLooper()));
+        new Thread(() -> {
+            MediaProjection mediaProjection = mediaProjectionManager.getMediaProjection(resultCode, parcelableExtra);
+            VirtualDisplay virtualDisplay = mediaProjection.createVirtualDisplay("screen-mirror",
+                    screenMetrics.widthPixels, screenMetrics.heightPixels, screenMetrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+                    surface, null, null);
+            isCaptured = false;
+            imageReader.setOnImageAvailableListener(reader -> {
+                if (isCaptured) {
+                    return;
+                }
+                isCaptured = true;
+                Bitmap bitmap = this.getBitmap(imageReader);
+                if (bitmap != null) {
+                    Log.d(TAG, "get bitmap size:" + bitmap.getByteCount());
+                    Log.d(TAG, "bitmap生成 消耗时间:" + PerformanceTimer.cut());
+                    OCRUtils.getInstance(
+                            preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_API), null),
+                            preferences.getString(getResources().getString(R.string.baidu_OCR_config_title_Secret), null)
+                    ).readBitmap(bitmap, result -> {
+                        Log.d(TAG, "OCR完成 消耗时间:" + PerformanceTimer.cut());
+                        if (result.getErrorCode() != OCRUtils.OCRResult.SUCCESS_CODE) {
+                            Toast.makeText(getApplicationContext(), "OCR识别失败，请重试或检查配置", Toast.LENGTH_LONG).show();
+                            Log.e(TAG, "ocr error" + result.getErrorMsg());
+                        } else {
+                            this.openOCRResultView(result.getAllWords());
+                        }
+                    });
+                }
+                virtualDisplay.release();
+                mediaProjection.stop();
+            }, new Handler(Looper.getMainLooper()));
+        }).start();
+
         return super.onStartCommand(intent, flags, startId);
     }
 
@@ -311,6 +314,7 @@ public class OCRResultService extends Service {
         bitmap.copyPixelsFromBuffer(buffer);
         // 切割
         bitmap = splitBitmap(bitmap);
+        buffer.clear();
         image.close();
         return bitmap;
     }
