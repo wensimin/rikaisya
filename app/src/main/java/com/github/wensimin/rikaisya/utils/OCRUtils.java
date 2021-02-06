@@ -40,16 +40,23 @@ public class OCRUtils {
         aipOcr.setSocketTimeoutInMillis(5000);
     }
 
-    public void readBitmap(Bitmap bitmap, OCRListener listener) {
-        byte[] bytes = bitmap2Bytes(bitmap);
+    public void readBitmap(Bitmap bitmap, OCRListener listener, boolean isAccurate) {
+        byte[] bytes = bitmap2Bytes(bitmap, isAccurate);
         Log.d(TAG, "byte size:" + bytes.length);
-        HashMap<String, String> options = new HashMap<>();
-        options.put("detect_language", "true");
-        options.put("detect_direction", "true");
+
         Handler handler = new Handler(Looper.getMainLooper());
         new Thread(() -> {
+            HashMap<String, String> options = new HashMap<>();
+            options.put("detect_direction", "true");
+            JSONObject jsonObject;
             Log.d(TAG, "ocr开始 消耗时间:" + PerformanceTimer.cut());
-            JSONObject jsonObject = aipOcr.basicGeneral(bytes, options);
+            if (isAccurate) {
+                options.put("language_type", "auto_detect");
+                jsonObject = aipOcr.basicAccurateGeneral(bytes, options);
+            } else {
+                options.put("detect_language", "true");
+                jsonObject = aipOcr.basicGeneral(bytes, options);
+            }
             handler.postDelayed(() -> listener.callback(new OCRResult(jsonObject)), 0);
         }).start();
     }
@@ -107,9 +114,10 @@ public class OCRUtils {
 
     }
 
-    private byte[] bitmap2Bytes(Bitmap bitmap) {
+    private byte[] bitmap2Bytes(Bitmap bitmap, boolean isAccurate) {
         ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        bitmap.compress(Bitmap.CompressFormat.JPEG, 30, byteArrayOutputStream);
+        int quality = isAccurate ? 100 : 50;
+        bitmap.compress(Bitmap.CompressFormat.JPEG, quality, byteArrayOutputStream);
         return byteArrayOutputStream.toByteArray();
     }
 

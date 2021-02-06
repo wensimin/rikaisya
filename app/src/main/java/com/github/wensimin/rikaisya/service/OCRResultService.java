@@ -58,6 +58,7 @@ public class OCRResultService extends Service {
     public static final String EXTRA_RESULT_INTENT = "EXTRA_RESULT_INTENT";
     public static final String EXTRA_RESULT_CODE = "EXTRA_RESULT_CODE";
     private static final String TRANSITION_SWITCH_STATUS = "TRANSITION_SWITCH_STATUS";
+    private static final String ACCURATE_SWITCH_STATUS = "ACCURATE_SWITCH_STATUS";
 
 
     private DisplayMetrics screenMetrics;
@@ -134,7 +135,7 @@ public class OCRResultService extends Service {
                         } else {
                             this.openOCRResultView(result.getAllWords());
                         }
-                    });
+                    }, preferences.getBoolean(ACCURATE_SWITCH_STATUS, false));
                 }
                 virtualDisplay.release();
                 mediaProjection.stop();
@@ -177,6 +178,8 @@ public class OCRResultService extends Service {
         sourceText.setMovementMethod(ScrollingMovementMethod.getInstance());
         TextView resultText = layout.findViewById(R.id.resultText);
         resultText.setMovementMethod(ScrollingMovementMethod.getInstance());
+        // 高精度OCR切换按钮
+        this.initAccurateSwitch(layout);
         // 自动翻译按钮
         this.initTransitionSwitch(layout, resultText, sourceText);
         // 取消按钮
@@ -193,6 +196,21 @@ public class OCRResultService extends Service {
         sourceText.setOnLongClickListener(copyListener);
         Button editButton = layout.findViewById(R.id.editButton);
         editButton.setOnClickListener(v -> createEditDialog(sourceText, resultText));
+    }
+
+    /**
+     * 初始化高精度ocr按钮
+     *
+     * @param layout 布局
+     */
+    private void initAccurateSwitch(FrameLayout layout) {
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch accurateSwitch = layout.findViewById(R.id.accurateSwitch);
+        boolean accurateStatus = preferences.getBoolean(ACCURATE_SWITCH_STATUS, false);
+        accurateSwitch.setChecked(accurateStatus);
+        accurateSwitch.setOnCheckedChangeListener((v, checked) -> {
+            Toast.makeText(getApplicationContext(), "已经修改OCR设置，下次开始生效", Toast.LENGTH_LONG).show();
+            preferences.edit().putBoolean(ACCURATE_SWITCH_STATUS, checked).apply();
+        });
     }
 
     /**
