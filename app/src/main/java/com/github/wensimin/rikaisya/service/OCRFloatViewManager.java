@@ -1,7 +1,6 @@
 package com.github.wensimin.rikaisya.service;
 
 import android.content.Context;
-import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.PixelFormat;
 import android.graphics.Point;
@@ -18,13 +17,11 @@ import android.widget.FrameLayout;
 import android.widget.Toast;
 
 import com.github.wensimin.rikaisya.R;
-import com.github.wensimin.rikaisya.activity.ScreenActivity;
 import com.github.wensimin.rikaisya.utils.PerformanceTimer;
 import com.github.wensimin.rikaisya.utils.SystemUtils;
 import com.github.wensimin.rikaisya.view.CaptureView;
 
 import static android.content.ContentValues.TAG;
-import static com.github.wensimin.rikaisya.activity.ScreenActivity.ACTION_CLOSE;
 
 public class OCRFloatViewManager {
     private final Context context;
@@ -33,6 +30,7 @@ public class OCRFloatViewManager {
     private WindowManager.LayoutParams layoutParams;
     private View OCRButton;
     private FrameLayout CapLayout;
+    private Runnable captureFunction;
     // 长按判定毫秒
     private static final int LONG_CLICK_INTERVAL_MS = 500;
     // 下次允许截图的时间
@@ -44,10 +42,12 @@ public class OCRFloatViewManager {
         this.context = context;
         this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
+
         initView();
     }
 
-    public void showFloatButton() {
+    public void showFloatButton(Runnable captureFunction) {
+        this.captureFunction = captureFunction;
         SystemUtils.addView(windowManager, OCRButton, layoutParams);
     }
 
@@ -116,20 +116,13 @@ public class OCRFloatViewManager {
         nextTime = System.currentTimeMillis() + CAP_INTERVAL * 1000;
         Log.d(TAG, "开始截图");
         PerformanceTimer.start();
-        Intent intent = new Intent(context, ScreenActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        context.startActivity(intent);
+        //开始截图
+        captureFunction.run();
     }
 
     public void destroy() {
         SystemUtils.removeView(windowManager, OCRButton);
         SystemUtils.removeView(windowManager, CapLayout);
-        context.stopService(new Intent(context, OCRResultService.class));
-        //TODO 待定，试图重用activity
-        Intent intent = new Intent(context, ScreenActivity.class);
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra(ACTION_CLOSE, true);
-        context.startActivity(intent);
     }
 
     /**

@@ -159,7 +159,7 @@ public class OCRResultViewManager {
                 preferences.getString(context.getResources().getString(R.string.tencent_translate_id), null),
                 preferences.getString(context.getResources().getString(R.string.tencent_translate_key), null),
                 true);
-        transitionUtils.transition(sourceText.toString(), result -> {
+        transitionUtils.transition(sourceText.getText().toString(), result -> {
             if (result.isError()) {
                 Log.w(TAG, String.format("error code:%s,error msg: %s", result.getCode(), result.getMessage()));
                 Toast.makeText(context, "翻译出现问题,请重试或检查配置", Toast.LENGTH_LONG).show();
