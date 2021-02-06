@@ -22,6 +22,9 @@
     <string name="cancel">取消</string>
     <string name="updateConfig">更新配置</string>
     <string name="accurateOCR">高精度OCR</string>
+    <string name="foreNotificationChannelId">foreground</string>
+    <string name="foreNotificationChannelName">正在截图通知</string>
+    <string name="foreNotificationChannelDesc">OCR服务截图中的通知</string>
 
 
 </resources>

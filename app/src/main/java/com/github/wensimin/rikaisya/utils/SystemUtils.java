@@ -1,10 +1,19 @@
 package com.github.wensimin.rikaisya.utils;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.WindowManager;
+
+import com.github.wensimin.rikaisya.R;
+import com.github.wensimin.rikaisya.activity.MainActivity;
 
 import static android.content.Context.WINDOW_SERVICE;
 
@@ -71,5 +80,27 @@ public class SystemUtils {
         if (!layout.isShown()) {
             windowManager.addView(layout, params);
         }
+    }
+
+    /**
+     * 将服务切换成前台服务
+     * @param service service
+     * @param id 前台服务id
+     */
+    public static void switchToForeground(Service service, int id) {
+        NotificationManager mNotificationManager =
+                (NotificationManager) service.getSystemService(Context.NOTIFICATION_SERVICE);
+        Intent notificationIntent = new Intent(service, MainActivity.class);
+        PendingIntent pendingIntent =
+                PendingIntent.getActivity(service, 0, notificationIntent, 0);
+        NotificationChannel channel = new NotificationChannel(service.getString(R.string.foreNotificationChannelId),
+                service.getString(R.string.foreNotificationChannelName),
+                NotificationManager.IMPORTANCE_DEFAULT);
+        channel.setDescription(service.getString(R.string.foreNotificationChannelDesc));
+        mNotificationManager.createNotificationChannel(channel);
+        Notification notification = new Notification.Builder(service, service.getString(R.string.foreNotificationChannelId))
+                .setContentIntent(pendingIntent)
+                .build();
+        service.startForeground(id, notification);
     }
 }
