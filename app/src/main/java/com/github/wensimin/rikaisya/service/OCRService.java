@@ -41,7 +41,7 @@ import static com.github.wensimin.rikaisya.service.OCRResultViewManager.ACCURATE
 /**
  * ocr service
  */
-public class OCRFloatingService extends Service {
+public class OCRService extends Service {
     private static final int FOREGROUND_ID = 1;
     private OCRFloatViewManager ocrFloatViewManager;
     private DisplayMetrics screenMetrics;

@@ -48,9 +48,9 @@ public class OCRTile extends TileService {
         tile.updateTile();
         int state = tile.getState();
         if (state == Tile.STATE_ACTIVE) {
-            startService(new Intent(this, OCRFloatingService.class));
+            startService(new Intent(this, OCRService.class));
         } else if (state == Tile.STATE_INACTIVE) {
-            stopService(new Intent(this, OCRFloatingService.class));
+            stopService(new Intent(this, OCRService.class));
         }
     }
 

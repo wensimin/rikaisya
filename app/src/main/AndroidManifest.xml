@@ -35,7 +35,7 @@
         <service
             android:name=".service.RikaiFloatingService"
             android:exported="false" />
-        <service android:name=".service.OCRFloatingService" />
+        <service android:name=".service.OCRService" />
         <service
             android:name=".service.OCRTile"
             android:icon="@drawable/ocr_setting"
