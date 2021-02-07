@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -40,10 +41,16 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
-        FloatingActionButton button = findViewById(R.id.fab);
-        // 按钮发起理解
-        button.setOnClickListener(b -> this.rikai());
-        // 服务权限
+        // 获取权限
+        requestDrawOverLays();
+        // 开启监听剪贴板服务
+        startService(new Intent(this, RikaiFloatingService.class));
+    }
+
+    /**
+     * 获取悬浮权限
+     */
+    private void requestDrawOverLays() {
         if (!Settings.canDrawOverlays(this)) {
 
             Toast.makeText(this, "当前无权限，请授权", Toast.LENGTH_SHORT).show();
@@ -68,16 +75,15 @@ public class MainActivity extends AppCompatActivity {
                     }
                 }
             });
+
             launcher.launch(Settings.ACTION_MANAGE_OVERLAY_PERMISSION);
         }
-        // 开启监听剪贴板服务
-        startService(new Intent(this, RikaiFloatingService.class));
     }
 
     /**
      * 进行解析
      */
-    private void rikai() {
+    public void rikai(View view) {
         Toast.makeText(MainActivity.this, "rikai!", Toast.LENGTH_SHORT).show();
         // listView
         ListView listView = findViewById(R.id.list_view);
@@ -102,12 +108,6 @@ public class MainActivity extends AppCompatActivity {
         acceptAction(intent);
     }
 
-    @Override
-    protected void onResume() {
-        super.onResume();
-        acceptAction(this.getIntent());
-    }
-
 
     /**
      * 接受服务请求
@@ -116,31 +116,15 @@ public class MainActivity extends AppCompatActivity {
         // 判断是否是服务按钮发起的理解
         if (intent.getBooleanExtra(RikaiFloatingService.ACTION_NAME, false)) {
             // 解析操作
-            this.rikai();
+            this.rikai(null);
         }
     }
 
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        // Inflate the menu; this adds items to the action bar if it is present.
         getMenuInflater().inflate(R.menu.setting_btn, menu);
         return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        // Handle action bar item clicks here. The action bar will
-        // automatically handle clicks on the Home/Up button, so long
-        // as you specify a parent activity in AndroidManifest.xml.
-        int id = item.getItemId();
-
-        //noinspection SimplifiableIfStatement
-        if (id == R.id.action_settings) {
-            return true;
-        }
-
-        return super.onOptionsItemSelected(item);
     }
 
 
@@ -148,4 +132,6 @@ public class MainActivity extends AppCompatActivity {
         Intent intent = new Intent(this, OCRSettingsActivity.class);
         startActivity(intent);
     }
+
+
 }

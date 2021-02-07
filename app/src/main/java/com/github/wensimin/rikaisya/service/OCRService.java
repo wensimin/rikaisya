@@ -72,14 +72,10 @@ public class OCRService extends Service {
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
         ocrResultViewManager = new OCRResultViewManager(getApplicationContext());
         checkStatusBarViewManager = new CheckStatusBarViewManager(getApplicationContext());
-    }
-
-    @Override
-    public int onStartCommand(Intent intent, int flags, int startId) {
         requestScreenshotPermission();
         ocrFloatViewManager.showFloatButton(this::startCapture);
-        return super.onStartCommand(intent, flags, startId);
     }
+
 
     /**
      * 请求截图权限
@@ -144,7 +140,6 @@ public class OCRService extends Service {
     }
 
 
-
     private boolean checkIsOver(DisplayMetrics screenMetrics, Rect rect) {
         return rect.left < 0 || rect.right > screenMetrics.widthPixels || rect.top < 0 || rect.bottom > screenMetrics.heightPixels;
     }
@@ -195,11 +190,14 @@ public class OCRService extends Service {
     }
 
 
-
     @Override
     public void onDestroy() {
-        surface.release();
-        imageReader.close();
+        if (surface != null) {
+            surface.release();
+        }
+        if (imageReader != null) {
+            imageReader.close();
+        }
         ocrResultViewManager.destroy();
         checkStatusBarViewManager.destroy();
         ocrFloatViewManager.destroy();
