@@ -17,6 +17,7 @@ import androidx.annotation.Nullable;
 
 import com.github.wensimin.rikaisya.activity.MainActivity;
 import com.github.wensimin.rikaisya.R;
+import com.github.wensimin.rikaisya.utils.SystemUtils;
 
 /**
  * 浮动窗服务
@@ -69,7 +70,7 @@ public class RikaiFloatingService extends Service {
             intent.putExtra(ACTION_NAME, true);
             getApplication().startActivity(intent);
         });
-        windowManager.addView(floatView, layoutParams);
+        SystemUtils.addView(windowManager, floatView, layoutParams);
         isFloating = true;
         this.deleteFloatView(floatView, 5 * 1000);
     }
@@ -83,10 +84,8 @@ public class RikaiFloatingService extends Service {
     private void deleteFloatView(View floatView, int time) {
         WindowManager windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         mDelayHandler.postDelayed(() -> {
-            if (floatView.isShown()) {
-                windowManager.removeView(floatView);
-                isFloating = false;
-            }
+            SystemUtils.removeView(windowManager, floatView);
+            isFloating = false;
         }, time);
     }
 

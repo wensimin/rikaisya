@@ -25,7 +25,6 @@ import com.github.wensimin.rikaisya.adapter.RikaiAdapter;
 import com.github.wensimin.rikaisya.api.Rikai;
 import com.github.wensimin.rikaisya.api.RikaiUtils;
 import com.github.wensimin.rikaisya.service.RikaiFloatingService;
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 
 import java.util.ArrayList;
 import java.util.Optional;
@@ -108,6 +107,11 @@ public class MainActivity extends AppCompatActivity {
         acceptAction(intent);
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        acceptAction(getIntent());
+    }
 
     /**
      * 接受服务请求
@@ -115,6 +119,8 @@ public class MainActivity extends AppCompatActivity {
     private void acceptAction(Intent intent) {
         // 判断是否是服务按钮发起的理解
         if (intent.getBooleanExtra(RikaiFloatingService.ACTION_NAME, false)) {
+            // 消耗掉action
+            intent.putExtra(RikaiFloatingService.ACTION_NAME, false);
             // 解析操作
             this.rikai(null);
         }
