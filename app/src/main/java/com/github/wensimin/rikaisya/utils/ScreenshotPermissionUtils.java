@@ -31,4 +31,5 @@ public class ScreenshotPermissionUtils {
     public static void setScreenshotPermission(final Intent permissionIntent) {
         screenshotPermission = permissionIntent;
     }
+
 }

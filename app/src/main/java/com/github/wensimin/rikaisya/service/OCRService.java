@@ -127,7 +127,13 @@ public class OCRService extends Service {
                             Toast.makeText(getApplicationContext(), "OCR识别失败，请重试或检查配置", Toast.LENGTH_LONG).show();
                             Log.e(TAG, "ocr error" + result.getErrorMsg());
                         } else {
-                            ocrResultViewManager.setSourceText(result.getAllWords());
+                            String allWords = result.getAllWords();
+                            allWords = allWords.trim();
+                            // 即使没有扫描到文字,也打开结果窗口
+                            if (allWords.isEmpty()) {
+                                Toast.makeText(getApplicationContext(), "未识别到文字", Toast.LENGTH_LONG).show();
+                            }
+                            ocrResultViewManager.setSourceText(allWords);
                             ocrResultViewManager.showOCRResultView();
                             Log.d(TAG, "显示OCR窗口 全部花费时间:" + PerformanceTimer.end());
                         }

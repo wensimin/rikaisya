@@ -1,6 +1,5 @@
 package com.github.wensimin.rikaisya.activity;
 
-import android.app.Activity;
 import android.content.Intent;
 import android.media.projection.MediaProjectionManager;
 import android.os.Bundle;
@@ -13,8 +12,6 @@ import androidx.annotation.Nullable;
 import com.github.wensimin.rikaisya.contract.ScreenCaptureContract;
 import com.github.wensimin.rikaisya.utils.ScreenshotPermissionUtils;
 
-import java.lang.reflect.Field;
-
 import static android.content.ContentValues.TAG;
 
 /**
@@ -26,11 +23,10 @@ public class ScreenActivity extends ComponentActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        this.startCapture();
+        this.getCapturePermission();
     }
 
-
-    private void startCapture() {
+    private void getCapturePermission() {
         MediaProjectionManager mediaProjectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
         ActivityResultLauncher<Integer> integerActivityResultLauncher = registerForActivityResult(new ScreenCaptureContract(mediaProjectionManager),
                 result -> {
@@ -44,21 +40,6 @@ public class ScreenActivity extends ComponentActivity {
                 });
         integerActivityResultLauncher.launch(null);
     }
-
-    @Override
-    protected void onResume() {
-        // FIXME 暴力hack
-        try {
-            @SuppressWarnings("JavaReflectionMemberAccess") Field mFinished = Activity.class.getDeclaredField("mFinished");
-            mFinished.setAccessible(true);
-            Log.d(TAG, "onResume: mFinished" + mFinished.get(this));
-            mFinished.setBoolean(this, true);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-        super.onResume();
-    }
-
 
     @Override
     public void finish() {

@@ -42,7 +42,6 @@ public class OCRFloatViewManager {
         this.context = context;
         this.windowManager = (WindowManager) context.getSystemService(Context.WINDOW_SERVICE);
         this.preferences = PreferenceManager.getDefaultSharedPreferences(context);
-
         initView();
     }
 
