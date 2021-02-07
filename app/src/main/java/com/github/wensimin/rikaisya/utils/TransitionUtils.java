@@ -27,6 +27,8 @@ public class TransitionUtils {
 
     public void transition(String sourceText, TransitionListener listener) {
         TextTranslateRequest textTranslateRequest = new TextTranslateRequest();
+        // TODO 分行模式 off 可能考虑改为配置
+        sourceText = sourceText.replaceAll("\n", "");
         textTranslateRequest.setSourceText(sourceText);
         textTranslateRequest.setSource("auto");
         //TODO 目标语言大概会修改成配置项
