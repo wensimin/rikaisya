@@ -25,6 +25,7 @@
     <string name="foreNotificationChannelId">foreground</string>
     <string name="foreNotificationChannelName">正在截图通知</string>
     <string name="foreNotificationChannelDesc">OCR服务截图中的通知</string>
+    <string name="trim">修剪</string>
 
 
 </resources>

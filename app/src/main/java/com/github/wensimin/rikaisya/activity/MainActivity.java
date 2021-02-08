@@ -10,6 +10,7 @@ import android.provider.Settings;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.Toast;
 
@@ -34,9 +35,13 @@ import java.util.Set;
 public class MainActivity extends AppCompatActivity {
 
 
+    private ClipboardManager clipboardManager;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        clipboardManager = (ClipboardManager)
+                getSystemService(Context.CLIPBOARD_SERVICE);
         // 顶部bar
         setContentView(R.layout.activity_main);
         Toolbar toolbar = findViewById(R.id.toolbar);
@@ -81,24 +86,46 @@ public class MainActivity extends AppCompatActivity {
     }
 
     /**
-     * 进行解析
+     * 浮动按钮进行解析
      */
-    public void rikai(View view) {
+    public void floatButtonRikai(View view) {
         Toast.makeText(MainActivity.this, "rikai!", Toast.LENGTH_SHORT).show();
-        // listView
+        View editLayout = findViewById(R.id.editLayout);
+        editLayout.setVisibility(View.VISIBLE);
+        EditText copyText = editLayout.findViewById(R.id.copyText);
+        String text = getCopyText();
+        copyText.setText(text);
+        rikai(text);
+    }
+
+    /**
+     * 获取当前复制的值
+     *
+     * @return text
+     */
+    private String getCopyText() {
+        ClipData clipData = clipboardManager.getPrimaryClip();
+        return Optional.ofNullable(clipData)
+                .map(c -> c.getItemAt(0))
+                .map(ClipData.Item::getText)
+                .map(CharSequence::toString).orElse("");
+    }
+
+
+    public void trimAndRikai(View view) {
+        EditText copyText = findViewById(R.id.copyText);
+        String text = copyText.getText().toString();
+        // trim + 去空格
+        text = text.trim().replaceAll(" ", "");
+        copyText.setText(text);
+        rikai(text);
+    }
+
+    private void rikai(String text) {
         ListView listView = findViewById(R.id.list_view);
-        ClipboardManager clipboardManager = (ClipboardManager)
-                getSystemService(Context.CLIPBOARD_SERVICE);
-        if (clipboardManager.hasPrimaryClip()) {
-            ClipData clipData = clipboardManager.getPrimaryClip();
-            String text = Optional.ofNullable(clipData)
-                    .map(c -> c.getItemAt(0))
-                    .map(ClipData.Item::getText)
-                    .map(CharSequence::toString).orElse("");
-            Set<Rikai> rikais = RikaiUtils.rikai(text);
-            RikaiAdapter adapter = new RikaiAdapter(MainActivity.this, android.R.layout.simple_list_item_1, new ArrayList<>(rikais));
-            listView.setAdapter(adapter);
-        }
+        Set<Rikai> rikais = RikaiUtils.rikai(text);
+        RikaiAdapter adapter = new RikaiAdapter(MainActivity.this, android.R.layout.simple_list_item_1, new ArrayList<>(rikais));
+        listView.setAdapter(adapter);
     }
 
 
@@ -123,7 +150,7 @@ public class MainActivity extends AppCompatActivity {
             // 消耗掉action
             intent.putExtra(RikaiFloatingService.ACTION_NAME, false);
             // 解析操作
-            this.rikai(null);
+            this.floatButtonRikai(null);
         }
     }
 
