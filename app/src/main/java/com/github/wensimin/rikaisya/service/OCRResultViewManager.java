@@ -58,6 +58,7 @@ public class OCRResultViewManager {
 
     public void setSourceText(String OCRResult) {
         sourceText.setText(OCRResult);
+        sourceText.setScrollY(0);
         boolean transitionStatus = preferences.getBoolean(TRANSITION_SWITCH_STATUS, false);
         if (transitionStatus) {
             transition();
@@ -125,7 +126,6 @@ public class OCRResultViewManager {
 
     /**
      * 初始化 自动翻译开关
-     *
      */
     private void initTransitionSwitch() {
         // 自动翻译开关
@@ -166,6 +166,7 @@ public class OCRResultViewManager {
             } else {
                 resultText.setVisibility(View.VISIBLE);
                 resultText.setText(result.getText());
+                resultText.setScrollY(0);
             }
         });
     }
