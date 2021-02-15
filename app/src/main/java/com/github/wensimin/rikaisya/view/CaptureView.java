@@ -18,8 +18,6 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.github.wensimin.rikaisya.R;
-import com.github.wensimin.rikaisya.service.OCRFloatViewManager;
-import com.github.wensimin.rikaisya.utils.OCRUtils;
 import com.github.wensimin.rikaisya.utils.SystemUtils;
 
 import static android.content.ContentValues.TAG;
