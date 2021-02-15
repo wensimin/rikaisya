@@ -9,18 +9,18 @@ import com.tencentcloudapi.tmt.v20180321.TmtClient;
 import com.tencentcloudapi.tmt.v20180321.models.TextTranslateRequest;
 import com.tencentcloudapi.tmt.v20180321.models.TextTranslateResponse;
 
-public class TransitionUtils {
-    private static TransitionUtils instance;
+public class TranslateUtils {
+    private static TranslateUtils instance;
     private final TmtClient tmtClient;
 
-    public static TransitionUtils getInstance(String id, String key, boolean isNew) {
+    public static TranslateUtils getInstance(String id, String key, boolean isNew) {
         if (isNew || instance == null) {
-            instance = new TransitionUtils(id, key);
+            instance = new TranslateUtils(id, key);
         }
         return instance;
     }
 
-    private TransitionUtils(String id, String key) {
+    private TranslateUtils(String id, String key) {
         Credential cred = new Credential(id, key);
         tmtClient = new TmtClient(cred, "ap-guangzhou");
     }

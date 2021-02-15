@@ -18,6 +18,8 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.github.wensimin.rikaisya.R;
+import com.github.wensimin.rikaisya.service.OCRFloatViewManager;
+import com.github.wensimin.rikaisya.utils.OCRUtils;
 import com.github.wensimin.rikaisya.utils.SystemUtils;
 
 import static android.content.ContentValues.TAG;
@@ -129,8 +131,8 @@ public class CaptureView extends View {
         int buttonBottom = buttonTop + DEFAULT_BUTTON_SIZE;
         // 按钮应该上的情况
         if (buttonBottom >= getHeight()) {
-             buttonBottom = (int) (top - padding);
-             buttonTop = buttonBottom - DEFAULT_BUTTON_SIZE;
+            buttonBottom = (int) (top - padding);
+            buttonTop = buttonBottom - DEFAULT_BUTTON_SIZE;
         }
         // 按钮已经没有外部位置的情况
         if (buttonTop <= 0) {
@@ -196,6 +198,7 @@ public class CaptureView extends View {
         if (isClickButton(startX, startY, cancelRect)) {
             this.listener.cancel();
         }
+
         return super.performClick();
     }
 

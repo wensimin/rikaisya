@@ -14,7 +14,7 @@ import androidx.preference.PreferenceFragmentCompat;
 
 import com.github.wensimin.rikaisya.R;
 import com.github.wensimin.rikaisya.utils.OCRUtils;
-import com.github.wensimin.rikaisya.utils.TransitionUtils;
+import com.github.wensimin.rikaisya.utils.TranslateUtils;
 
 public class OCRSettingsActivity extends AppCompatActivity {
 
@@ -52,7 +52,7 @@ public class OCRSettingsActivity extends AppCompatActivity {
         String tencentId = preferences.getString(getResources().getString(R.string.tencent_translate_id), null);
         String tencentKey = preferences.getString(getResources().getString(R.string.tencent_translate_key), null);
         OCRUtils.getInstance(baiduApi, baiduSecret, true);
-        TransitionUtils.getInstance(tencentId, tencentKey, true);
+        TranslateUtils.getInstance(tencentId, tencentKey, true);
         Toast.makeText(this, "已经更新配置信息", Toast.LENGTH_LONG).show();
     }
 

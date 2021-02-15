@@ -43,11 +43,11 @@
                 android:layout_height="wrap_content"
                 android:layout_weight="1"/>
             <Switch
-                android:id="@+id/transitionSwitch"
+                android:id="@+id/translateSwitch"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="end"
-                android:text="@string/autoTransitionSwitch"
+                android:text="@string/autoTranslateSwitch"
                 android:textAlignment="viewEnd"
                 android:textColor="@color/floatViewText"
                 tools:ignore="UseSwitchCompatOrMaterialXml" />

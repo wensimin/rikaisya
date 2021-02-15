@@ -23,7 +23,7 @@ import android.widget.Toast;
 
 import com.github.wensimin.rikaisya.R;
 import com.github.wensimin.rikaisya.utils.SystemUtils;
-import com.github.wensimin.rikaisya.utils.TransitionUtils;
+import com.github.wensimin.rikaisya.utils.TranslateUtils;
 
 import static android.content.ContentValues.TAG;
 
@@ -32,7 +32,7 @@ public class OCRResultViewManager {
     private final WindowManager windowManager;
     private final ClipboardManager clipboardManager;
     private final SharedPreferences preferences;
-    public static final String TRANSITION_SWITCH_STATUS = "TRANSITION_SWITCH_STATUS";
+    public static final String TRANSLATE_SWITCH_STATUS = "TRANSLATE_SWITCH_STATUS";
     public static final String ACCURATE_SWITCH_STATUS = "ACCURATE_SWITCH_STATUS";
     private TextView sourceText;
     private TextView resultText;
@@ -59,9 +59,9 @@ public class OCRResultViewManager {
     public void setSourceText(String OCRResult) {
         sourceText.setText(OCRResult);
         sourceText.setScrollY(0);
-        boolean transitionStatus = preferences.getBoolean(TRANSITION_SWITCH_STATUS, false);
+        boolean transitionStatus = preferences.getBoolean(TRANSLATE_SWITCH_STATUS, false);
         if (transitionStatus) {
-            transition();
+            translate();
         }
     }
 
@@ -94,7 +94,7 @@ public class OCRResultViewManager {
         // 高精度OCR切换按钮
         this.initAccurateSwitch();
         // 自动翻译按钮
-        this.initTransitionSwitch();
+        this.initTranslateSwitch();
         // 取消按钮
         Button cancelButton = layout.findViewById(R.id.cancelButton);
         cancelButton.setOnClickListener(v -> SystemUtils.removeView(windowManager, layout));
@@ -127,13 +127,13 @@ public class OCRResultViewManager {
     /**
      * 初始化 自动翻译开关
      */
-    private void initTransitionSwitch() {
+    private void initTranslateSwitch() {
         // 自动翻译开关
-        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch transitionSwitch = layout.findViewById(R.id.transitionSwitch);
-        boolean switchStatus = preferences.getBoolean(TRANSITION_SWITCH_STATUS, false);
+        @SuppressLint("UseSwitchCompatOrMaterialCode") Switch transitionSwitch = layout.findViewById(R.id.translateSwitch);
+        boolean switchStatus = preferences.getBoolean(TRANSLATE_SWITCH_STATUS, false);
         transitionSwitch.setChecked(switchStatus);
         transitionSwitch.setOnCheckedChangeListener((v, checked) -> {
-            preferences.edit().putBoolean(TRANSITION_SWITCH_STATUS, checked).apply();
+            preferences.edit().putBoolean(TRANSLATE_SWITCH_STATUS, checked).apply();
             this.setTransitionStatus(checked);
         });
     }
@@ -145,7 +145,7 @@ public class OCRResultViewManager {
      */
     private void setTransitionStatus(boolean enabled) {
         if (enabled) {
-            this.transition();
+            this.translate();
         } else {
             resultText.setVisibility(View.GONE);
         }
@@ -154,12 +154,13 @@ public class OCRResultViewManager {
     /**
      * 翻译
      */
-    private void transition() {
-        TransitionUtils transitionUtils = TransitionUtils.getInstance(
+    private void translate() {
+        resultText.setText(R.string.translating);
+        TranslateUtils translateUtils = TranslateUtils.getInstance(
                 preferences.getString(context.getResources().getString(R.string.tencent_translate_id), null),
                 preferences.getString(context.getResources().getString(R.string.tencent_translate_key), null),
                 true);
-        transitionUtils.transition(sourceText.getText().toString(), result -> {
+        translateUtils.transition(sourceText.getText().toString(), result -> {
             if (result.isError()) {
                 Log.w(TAG, String.format("error code:%s,error msg: %s", result.getCode(), result.getMessage()));
                 Toast.makeText(context, "翻译出现问题,请重试或检查配置", Toast.LENGTH_LONG).show();

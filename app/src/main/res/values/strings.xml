@@ -15,7 +15,7 @@
     <string name="tencent_translate_key">腾讯翻译 API key</string>
     <string name="edit">编辑</string>
     <string name="quit">退出</string>
-    <string name="autoTransitionSwitch">自动翻译</string>
+    <string name="autoTranslateSwitch">自动翻译</string>
     <string name="confirm">确认</string>
     <string name="editDialogTitle">编辑ocr结果</string>
     <string name="ok">确定</string>
@@ -26,6 +26,7 @@
     <string name="foreNotificationChannelName">正在截图通知</string>
     <string name="foreNotificationChannelDesc">OCR服务截图中的通知</string>
     <string name="trim">修剪</string>
+    <string name="translating">翻译中...</string>
 
 
 </resources>

@@ -24,6 +24,8 @@ import com.github.wensimin.rikaisya.view.CaptureView;
 import static android.content.ContentValues.TAG;
 
 public class OCRFloatViewManager {
+    public static final String OCR_X_KEY = "OCR_X_KEY";
+    public static final String OCR_Y_KEY = "OCR_Y_KEY";
     private final Context context;
     private final WindowManager windowManager;
     private final SharedPreferences preferences;
@@ -37,6 +39,7 @@ public class OCRFloatViewManager {
     private long nextTime;
     // 截图间隔秒数
     private static final int CAP_INTERVAL = 3;
+
 
     public OCRFloatViewManager(Context context) {
         this.context = context;
@@ -64,8 +67,8 @@ public class OCRFloatViewManager {
         windowManager.getDefaultDisplay().getSize(point);
         int defaultX = point.x / 2 - OCRButton.getWidth() / 2;
         int defaultY = point.y / 2 - OCRButton.getHeight() / 4;
-        int x = preferences.getInt(OCRFloatViewManager.OCRTouchListener.OCR_X_KEY, defaultX);
-        int y = preferences.getInt(OCRFloatViewManager.OCRTouchListener.OCR_Y_KEY, defaultY);
+        int x = preferences.getInt(OCR_X_KEY, defaultX);
+        int y = preferences.getInt(OCR_Y_KEY, defaultY);
         layoutParams.x = x;
         layoutParams.y = y;
         layoutParams.width = WindowManager.LayoutParams.WRAP_CONTENT;
@@ -131,8 +134,6 @@ public class OCRFloatViewManager {
     private class OCRTouchListener implements View.OnTouchListener {
         private int startX;
         private int startY;
-        public static final String OCR_X_KEY = "OCR_X_KEY";
-        public static final String OCR_Y_KEY = "OCR_Y_KEY";
         private final WindowManager windowManager;
         private final Handler handler = new Handler();
         // 长按事件
