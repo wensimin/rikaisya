@@ -7,6 +7,7 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
+import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -184,20 +185,51 @@ public class CaptureView extends View {
         return true;
     }
 
+    private int clickCount = 0;
+
     @Override
     public boolean performClick() {
         if (this.listener == null) {
             return super.performClick();
         }
+        addClickCount();
+        // 双击确定
+        if (isDoubleClick()) {
+            confirm();
+        }
         if (isClickButton(startX, startY, confirmRect)) {
-            this.savePos();
-            this.listener.confirm();
+            this.confirm();
         }
         if (isClickButton(startX, startY, cancelRect)) {
-            this.listener.cancel();
+            cancel();
         }
-
         return super.performClick();
+    }
+
+
+    private void addClickCount() {
+        clickCount++;
+        // 归0
+        new Handler().postDelayed(() -> clickCount = 0, 1000);
+    }
+
+    private boolean isDoubleClick() {
+        return clickCount >= 2;
+    }
+
+    /**
+     * 确定操作
+     */
+    private void confirm() {
+        this.savePos();
+        this.listener.confirm();
+    }
+
+    /**
+     * 取消操作
+     */
+    private void cancel() {
+        this.listener.cancel();
     }
 
     /**
