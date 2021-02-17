@@ -1,5 +1,6 @@
 package com.github.wensimin.rikaisya.view;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.graphics.Canvas;
@@ -7,7 +8,6 @@ import android.graphics.Color;
 import android.graphics.Paint;
 import android.graphics.Rect;
 import android.graphics.drawable.Drawable;
-import android.os.Handler;
 import android.preference.PreferenceManager;
 import android.util.AttributeSet;
 import android.util.DisplayMetrics;
@@ -19,6 +19,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.content.res.AppCompatResources;
 
 import com.github.wensimin.rikaisya.R;
+import com.github.wensimin.rikaisya.adapter.TouchAdapter;
 import com.github.wensimin.rikaisya.utils.SystemUtils;
 
 import static android.content.ContentValues.TAG;
@@ -40,10 +41,6 @@ public class CaptureView extends View {
     private float right = 0f;
     private float top = 0f;
     private float bottom = 0f;
-    private float oldX = 0f;
-    private float oldY = 0f;
-    private float startX;
-    private float startY;
     private boolean isReSize = false;
     private boolean changeLeft = false;
     private boolean changeRight = false;
@@ -55,6 +52,10 @@ public class CaptureView extends View {
     private Drawable cancel;
     private Rect cancelRect;
     private ResListener listener;
+    /**
+     * 触摸事件适配器
+     */
+    private TouchAdapter touchAdapter;
 
     public CaptureView(Context context) {
         super(context);
@@ -87,6 +88,39 @@ public class CaptureView extends View {
         cancel = AppCompatResources.getDrawable(getContext(), R.drawable.cancel);
         confirmRect = new Rect();
         cancelRect = new Rect();
+        initTouch();
+    }
+
+    /**
+     * touch事件初始化
+     */
+    private void initTouch() {
+        touchAdapter = new TouchAdapter();
+        // 点击事件开始 记录是否click了边角
+        touchAdapter.setStartListener((x, y) -> this.isReSize = isTouchAngle(x, y));
+        // 单击确认与取消按钮事件
+        touchAdapter.setClickListener((x, y) -> {
+            if (isClickButton(x, y, confirmRect)) {
+                this.confirm();
+            }
+            if (isClickButton(x, y, cancelRect)) {
+                this.cancel();
+            }
+        });
+        // 双击事件 确认操作
+        touchAdapter.setDoubleClickListener((x, y) -> confirm());
+        // 多指单击事件 取消操作
+        touchAdapter.setMultipleTapListener((aX, aY, bx, bY) -> cancel());
+        // move事件 根据初始不同的click位置进行move or resize
+        touchAdapter.setMoveListener(((moveX, moveY, x, y) -> {
+            if (isReSize) {
+                touchReSize(x, y);
+            } else {
+                touchMove(moveX, moveY);
+            }
+        }));
+        // 双指move resize
+        touchAdapter.setMultipleMoveListener(this::multipleTapResize);
     }
 
 
@@ -155,67 +189,12 @@ public class CaptureView extends View {
         };
     }
 
+    @SuppressLint("ClickableViewAccessibility")
     @Override
     public boolean onTouchEvent(MotionEvent event) {
-        float x = event.getX();
-        float y = event.getY();
-        switch (event.getAction() & MotionEvent.ACTION_MASK) {
-            case MotionEvent.ACTION_DOWN:
-                oldX = event.getX();
-                oldY = event.getY();
-                startX = event.getX();
-                startY = event.getY();
-                this.isReSize = isTouchAngle(oldX, oldY);
-                Log.d(TAG, "onTouchEvent: reSize:" + isReSize);
-                break;
-            case MotionEvent.ACTION_UP:
-                boolean isClick = Math.abs(startX - event.getX()) <= 10 && Math.abs(startY - event.getY()) <= 10;
-                if (isClick) {
-                    performClick();
-                }
-                break;
-            case MotionEvent.ACTION_MOVE:
-                Log.d(TAG, "on touch move");
-                if (isReSize) {
-                    touchReSize(x, y);
-                } else {
-                    touchMove(x, y);
-                }
-        }
-        return true;
+        return touchAdapter.onTouch(event);
     }
 
-    private int clickCount = 0;
-
-    @Override
-    public boolean performClick() {
-        if (this.listener == null) {
-            return super.performClick();
-        }
-        addClickCount();
-        // 双击确定
-        if (isDoubleClick()) {
-            confirm();
-        }
-        if (isClickButton(startX, startY, confirmRect)) {
-            this.confirm();
-        }
-        if (isClickButton(startX, startY, cancelRect)) {
-            cancel();
-        }
-        return super.performClick();
-    }
-
-
-    private void addClickCount() {
-        clickCount++;
-        // 归0
-        new Handler().postDelayed(() -> clickCount = 0, 1000);
-    }
-
-    private boolean isDoubleClick() {
-        return clickCount >= 2;
-    }
 
     /**
      * 确定操作
@@ -267,27 +246,53 @@ public class CaptureView extends View {
             if (changeBottom)
                 bottom -= overHeight;
         }
-        oldX = x;
-        oldY = y;
         this.invalidate();
+    }
+
+    /**
+     * 双指移动 resize
+     *
+     * @param position 需要移动的边
+     * @param move     需要移动的量
+     */
+    private void multipleTapResize(TouchAdapter.PointPosition position, float move) {
+        switch (position) {
+            case top:
+                top += move;
+                top = fixValue(top, PADDING, bottom - MIN_LINE_LENGTH);
+                break;
+            case left:
+                left += move;
+                left = fixValue(left, PADDING, right - MIN_LINE_LENGTH);
+                break;
+            case right:
+                right += move;
+                right = fixValue(right, left + MIN_LINE_LENGTH, getWidth() - PADDING);
+                break;
+            case bottom:
+                bottom += move;
+                bottom = fixValue(bottom, top + MIN_LINE_LENGTH, getHeight() - PADDING);
+                break;
+        }
+        this.invalidate();
+    }
+
+    private float fixValue(float value, float min, float max) {
+        return Math.max(Math.min(value, max), min);
     }
 
     /**
      * 拖拽移动
      *
-     * @param x 当前x
-     * @param y 当前y
+     * @param moveX 移动x
+     * @param moveY 移动y
      */
-    private void touchMove(float x, float y) {
-        float moveX = x - oldX;
-        float moveY = y - oldY;
+    private void touchMove(float moveX, float moveY) {
         left += moveX;
         right += moveX;
         top += moveY;
         bottom += moveY;
         fixOver();
-        oldX = x;
-        oldY = y;
         this.invalidate();
     }
 
