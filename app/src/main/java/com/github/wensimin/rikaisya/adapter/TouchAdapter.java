@@ -20,29 +20,31 @@ public class TouchAdapter {
     private MultipleMoveListener multipleMoveListener;
     private Orientation orientation;
     private int clickCount = 0;
+    private boolean multipleMove;
 
     public boolean onTouch(MotionEvent event) {
         float x = event.getX();
         float y = event.getY();
         int actionIndex = event.getActionIndex();
         int pointerId = event.getPointerId(actionIndex);
-        Log.d(TAG, "onTouch: id " + pointerId);
         switch (event.getActionMasked()) {
             case MotionEvent.ACTION_DOWN:
-                // 初始化 点击集合
-                pointA = new Point(pointerId, x, y);
-                Log.d(TAG, "onTouch: start");
-                if (startListener != null) {
-                    startListener.call(x, y);
-                }
+                this.start(pointerId, x, y);
                 break;
             case MotionEvent.ACTION_UP:
                 this.end(x, y);
                 break;
             case MotionEvent.ACTION_MOVE:
-                if (isMultipleTap()) {
-                    multipleMoveAction(pointerId, x, y);
-                } else {
+                int aIndex = event.findPointerIndex(pointA.id);
+                if (isMultipleTap() && event.getPointerCount() > 1) {
+                    multipleMove = true;
+                    int bIndex = event.findPointerIndex(pointB.id);
+                    float ax = event.getX(aIndex);
+                    float ay = event.getY(aIndex);
+                    float bx = event.getX(bIndex);
+                    float by = event.getY(bIndex);
+                    multipleMoveAction(ax, ay, bx, by);
+                } else if (!multipleMove) {
                     moveAction(x, y);
                 }
                 break;
@@ -52,11 +54,28 @@ public class TouchAdapter {
                 if (pointB != null) {
                     break;
                 }
-                pointB = new Point(pointerId, x, y);
+                pointB = new Point(pointerId, event.getX(actionIndex), event.getY(actionIndex));
                 setMultipleTapOrientation();
                 break;
         }
         return true;
+    }
+
+    /**
+     * 事件开始
+     *
+     * @param pointerId aId
+     * @param x         x
+     * @param y         y
+     */
+    private void start(int pointerId, float x, float y) {
+        // 初始化 点击集合
+        pointA = new Point(pointerId, x, y);
+        multipleMove = false;
+        Log.d(TAG, "onTouch: start");
+        if (startListener != null) {
+            startListener.call(x, y);
+        }
     }
 
     /**
@@ -69,7 +88,7 @@ public class TouchAdapter {
         if (isMultipleTap()) {
             boolean isClickA = isClick(pointA, pointA.prevX, pointA.prevY);
             boolean isClickB = isClick(pointA, pointA.prevX, pointA.prevY);
-            if (isClickA && isClickB) {
+            if (!multipleMove && isClickA && isClickB) {
                 Log.d(TAG, "end: is double click");
                 if (multipleTapListener != null) {
                     multipleTapListener.call(pointA.prevX, pointA.prevY, pointB.prevX, pointB.prevY);
@@ -115,28 +134,32 @@ public class TouchAdapter {
         return clickCount >= 2;
     }
 
-    private void multipleMoveAction(int id, float x, float y) {
-        // 判断当前移动和非移动的point
-        Point movePoint = pointA.id == id ? pointA : pointB;
-        Point holePoint = pointA.id == id ? pointB : pointA;
-        PointPosition position;
+    private void multipleMoveAction(float ax, float ay, float bx, float by) {
+        // 分两次移动
+        this.multipleMoveAction(pointA, ax, ay);
+        this.multipleMoveAction(pointB, bx, by);
+        pointA.prevX = ax;
+        pointA.prevY = ay;
+        pointB.prevX = bx;
+        pointB.prevY = by;
+
+    }
+
+    private void multipleMoveAction(Point movePoint, float x, float y) {
         float move;
         switch (orientation) {
             case vertical:
-                position = movePoint.prevY > holePoint.prevY ? PointPosition.bottom : PointPosition.top;
                 move = y - movePoint.prevY;
                 break;
             case horizontal:
-                position = movePoint.prevX > holePoint.prevX ? PointPosition.right : PointPosition.left;
-                move = x - movePoint.prevY;
+                move = x - movePoint.prevX;
                 break;
             default:
                 throw new IllegalStateException("Unexpected value: " + orientation);
         }
-        movePoint.prevX = x;
-        movePoint.prevY = y;
         if (multipleMoveListener != null) {
-            multipleMoveListener.call(position, move);
+            multipleMoveListener.call(movePoint.position, move);
+            Log.d(TAG, String.format("multiple move position %s move %s", movePoint.position, move));
         }
     }
 
@@ -168,6 +191,16 @@ public class TouchAdapter {
         float xAbs = Math.abs(pointA.startX - pointB.startX);
         float yAbs = Math.abs(pointA.startY - pointB.startY);
         orientation = xAbs > yAbs ? Orientation.horizontal : Orientation.vertical;
+        switch (orientation) {
+            case horizontal:
+                pointA.position = pointA.startX > pointB.startX ? PointPosition.right : PointPosition.left;
+                pointB.position = pointA.position == PointPosition.left ? PointPosition.right : PointPosition.left;
+                break;
+            case vertical:
+                pointA.position = pointA.startY > pointB.startY ? PointPosition.bottom : PointPosition.top;
+                pointB.position = pointA.position == PointPosition.bottom ? PointPosition.top : PointPosition.bottom;
+                break;
+        }
     }
 
     /**
@@ -202,6 +235,7 @@ public class TouchAdapter {
         float startY;
         float prevX;
         float prevY;
+        PointPosition position;
 
         public Point(int id, float startX, float startY) {
             this.id = id;
