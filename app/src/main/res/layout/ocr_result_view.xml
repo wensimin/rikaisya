@@ -38,10 +38,12 @@
                 android:textAlignment="viewStart"
                 android:textColor="@color/floatViewText"
                 tools:ignore="UseSwitchCompatOrMaterialXml" />
+
             <Space
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_weight="1"/>
+                android:layout_weight="1" />
+
             <Switch
                 android:id="@+id/translateSwitch"
                 android:layout_width="wrap_content"
@@ -52,6 +54,7 @@
                 android:textColor="@color/floatViewText"
                 tools:ignore="UseSwitchCompatOrMaterialXml" />
         </LinearLayout>
+
 
         <com.github.wensimin.rikaisya.view.AlwaysFocusTextView
             android:id="@+id/resultText"

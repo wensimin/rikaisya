@@ -30,7 +30,8 @@ import static android.content.ContentValues.TAG;
 public class CaptureView extends View {
     private Paint linePaint;
     private static final float DEFAULT_LINE_LENGTH = 300f;
-    private static final float MIN_LINE_LENGTH = 100f;
+    // 最短线条长度
+    private static final float MIN_LINE_LENGTH = 20f;
     private static final int DEFAULT_BUTTON_SIZE = 120;
     private static final int PADDING = 1;
     public static final String CAP_LEFT_KEY = "CAP_LEFT_KEY";

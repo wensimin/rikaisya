@@ -38,7 +38,7 @@ public class OCRFloatViewManager {
     // 下次允许截图的时间
     private long nextTime;
     // 截图间隔秒数
-    private static final int CAP_INTERVAL = 3;
+    private static final int CAP_INTERVAL = 1;
 
 
     public OCRFloatViewManager(Context context) {
@@ -167,7 +167,6 @@ public class OCRFloatViewManager {
                     if (isClick && !longClicked) {
                         view.performClick();
                     }
-
                     SharedPreferences.Editor editor = preferences.edit();
                     editor.putInt(OCR_X_KEY, layoutParams.x);
                     editor.putInt(OCR_Y_KEY, layoutParams.y);
@@ -187,8 +186,8 @@ public class OCRFloatViewManager {
         }
 
         private boolean moveRangeMini(int x, int y) {
-            int miniRange = 10;
-            return Math.abs(startX - x) < miniRange || Math.abs(startY - y) < miniRange;
+            int minRange = 10;
+            return Math.abs(startX - x) < minRange || Math.abs(startY - y) < minRange;
         }
     }
 
