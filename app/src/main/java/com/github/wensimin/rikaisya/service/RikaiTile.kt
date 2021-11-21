@@ -1,4 +1,6 @@
 package com.github.wensimin.rikaisya.service
 
-class RikaiTile {
+import android.service.quicksettings.TileService
+
+class RikaiTile : TileService() {
 }
