@@ -1,10 +1,19 @@
 package com.github.wensimin.rikaisya.utils;
 
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.app.Service;
 import android.content.Context;
+import android.content.Intent;
 import android.content.res.Resources;
 import android.util.DisplayMetrics;
 import android.view.View;
 import android.view.WindowManager;
+
+import com.github.wensimin.rikaisya.R;
+import com.github.wensimin.rikaisya.service.SwitchTile;
 
 public class SystemUtils {
 
@@ -68,6 +77,31 @@ public class SystemUtils {
         if (!layout.isShown()) {
             windowManager.addView(layout, params);
         }
+    }
+
+
+    /**
+     * 将服务切换成前台服务
+     * 同时显示通知与点击关闭功能
+     *
+     * @param service         需要切换的服务
+     * @param id              服务id
+     * @param notification    需要显示的通知
+     * @param switchTileClass 对应的switchTile class
+     */
+    public static void switchToForeground(Service service, int id, Notification notification, Class<? extends SwitchTile> switchTileClass) {
+        NotificationManager mNotificationManager =
+                (NotificationManager) service.getSystemService(Context.NOTIFICATION_SERVICE);
+        Intent stopTile = new Intent(service, switchTileClass).setFlags(SwitchTile.STOP_FLAG);
+        PendingIntent pendingIntent =
+                PendingIntent.getService(service, 0, stopTile, 0);
+        NotificationChannel channel = new NotificationChannel(service.getString(R.string.foreNotificationChannelId),
+                service.getString(R.string.foreNotificationChannelName),
+                NotificationManager.IMPORTANCE_DEFAULT);
+        channel.setDescription(service.getString(R.string.foreNotificationChannelDesc));
+        mNotificationManager.createNotificationChannel(channel);
+        notification.contentIntent = pendingIntent;
+        service.startForeground(id, notification);
     }
 
 

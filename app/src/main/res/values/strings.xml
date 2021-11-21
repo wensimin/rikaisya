@@ -26,9 +26,11 @@
     <string name="foreNotificationChannelName">正在截图通知</string>
     <string name="foreNotificationChannelDesc">OCR服务截图中的通知</string>
     <string name="trim">修剪</string>
-    <string name="translating">翻译中...</string>
-    <string name="OCR_ACTIVIED">OCR按钮已激活</string>
-    <string name="CLICK_STOP_OCR">点击停止OCR服务</string>
+    <string name="translating">翻译中…</string>
+    <string name="OCRActive">OCR按钮已激活</string>
+    <string name="clickStopOCR">点击停止OCR服务</string>
+    <string name="rikaiClipboard">正在监听剪贴板</string>
+    <string name="clickCloseRikai">点击关闭监听剪贴板</string>
 
 
 </resources>

@@ -2,11 +2,7 @@ package com.github.wensimin.rikaisya.service;
 
 import android.annotation.SuppressLint;
 import android.app.Notification;
-import android.app.NotificationChannel;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.Service;
-import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -82,23 +78,12 @@ public class OCRService extends Service {
      * 将服务切换成前台服务
      */
     private void switchToForeground() {
-        NotificationManager mNotificationManager =
-                (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
-        Intent stopTile = new Intent(this, OCRTile.class).setFlags(OCRTile.STOP_FLAG);
-        PendingIntent pendingIntent =
-                PendingIntent.getService(this, 0, stopTile, 0);
-        NotificationChannel channel = new NotificationChannel(this.getString(R.string.foreNotificationChannelId),
-                this.getString(R.string.foreNotificationChannelName),
-                NotificationManager.IMPORTANCE_DEFAULT);
-        channel.setDescription(this.getString(R.string.foreNotificationChannelDesc));
-        mNotificationManager.createNotificationChannel(channel);
         Notification notification = new Notification.Builder(this, this.getString(R.string.foreNotificationChannelId))
-                .setContentTitle(getString(R.string.OCR_ACTIVIED))
-                .setContentText(getString(R.string.CLICK_STOP_OCR))
+                .setContentTitle(getString(R.string.OCRActive))
+                .setContentText(getString(R.string.clickStopOCR))
                 .setSmallIcon(R.drawable.ic_launcher_round)
-                .setContentIntent(pendingIntent)
                 .build();
-        this.startForeground(FOREGROUND_ID, notification);
+        SystemUtils.switchToForeground(this, FOREGROUND_ID, notification, OCRTile.class);
     }
 
     /**

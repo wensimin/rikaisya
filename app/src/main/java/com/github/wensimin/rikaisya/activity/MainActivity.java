@@ -48,8 +48,6 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         // 获取权限
         requestDrawOverLays();
-        // 开启监听剪贴板服务
-        startService(new Intent(this, RikaiFloatingService.class));
     }
 
     /**

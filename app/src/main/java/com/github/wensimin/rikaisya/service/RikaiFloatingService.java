@@ -1,5 +1,6 @@
 package com.github.wensimin.rikaisya.service;
 
+import android.app.Notification;
 import android.app.Service;
 import android.content.ClipboardManager;
 import android.content.Context;
@@ -23,6 +24,7 @@ import com.github.wensimin.rikaisya.utils.SystemUtils;
  * 浮动窗服务
  */
 public class RikaiFloatingService extends Service {
+    private static final int FOREGROUND_ID = 2;
     private final Handler mDelayHandler = new Handler(Looper.getMainLooper());
     public static final String ACTION_NAME = "RIKAI";
     private final ClipboardManager.OnPrimaryClipChangedListener listener = this::dialogButton;
@@ -43,6 +45,22 @@ public class RikaiFloatingService extends Service {
         ClipboardManager clipboardManager = (ClipboardManager)
                 getSystemService(Context.CLIPBOARD_SERVICE);
         clipboardManager.addPrimaryClipChangedListener(listener);
+        // 切换到前台服务
+        switchToForeground();
+        // 服务建立时激活一次图标
+        dialogButton();
+    }
+
+    /**
+     * 将服务切换成前台服务
+     */
+    private void switchToForeground() {
+        Notification notification = new Notification.Builder(this, this.getString(R.string.foreNotificationChannelId))
+                .setContentTitle(getString(R.string.rikaiClipboard))
+                .setContentText(getString(R.string.clickCloseRikai))
+                .setSmallIcon(R.drawable.ic_launcher_round)
+                .build();
+        SystemUtils.switchToForeground(this, FOREGROUND_ID, notification, RikaiTile.class);
     }
 
 
