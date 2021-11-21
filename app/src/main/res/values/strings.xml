@@ -27,6 +27,8 @@
     <string name="foreNotificationChannelDesc">OCR服务截图中的通知</string>
     <string name="trim">修剪</string>
     <string name="translating">翻译中...</string>
+    <string name="OCR_ACTIVIED">OCR按钮已激活</string>
+    <string name="CLICK_STOP_OCR">点击停止OCR服务</string>
 
 
 </resources>

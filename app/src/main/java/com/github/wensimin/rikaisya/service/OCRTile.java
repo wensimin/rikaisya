@@ -9,6 +9,8 @@ import android.service.quicksettings.TileService;
  */
 public class OCRTile extends TileService {
 
+    public static int STOP_FLAG = -1;
+
     @Override
     public void onTileAdded() {
         super.onTileAdded();
@@ -36,6 +38,14 @@ public class OCRTile extends TileService {
         this.refresh();
     }
 
+    @Override
+    public int onStartCommand(Intent intent, int flags, int startId) {
+        // 需要停止且当前tile状态为active时调用click tile使其停止
+        if (intent.getFlags() == STOP_FLAG && getQsTile().getState() == Tile.STATE_ACTIVE) {
+            onClick();
+        }
+        return super.onStartCommand(intent, flags, startId);
+    }
 
     @Override
     public void onStopListening() {

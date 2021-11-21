@@ -1,7 +1,12 @@
 package com.github.wensimin.rikaisya.service;
 
 import android.annotation.SuppressLint;
+import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap;
@@ -20,7 +25,6 @@ import android.preference.PreferenceManager;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import android.view.Surface;
-import android.view.WindowManager;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
@@ -46,7 +50,6 @@ public class OCRService extends Service {
     private OCRFloatViewManager ocrFloatViewManager;
     private DisplayMetrics screenMetrics;
     private MediaProjectionManager mediaProjectionManager;
-    private WindowManager windowManager;
     private Rect rect;
     private ImageReader imageReader;
     private Surface surface;
@@ -63,10 +66,9 @@ public class OCRService extends Service {
 
     @Override
     public void onCreate() {
-        windowManager = (WindowManager) getSystemService(WINDOW_SERVICE);
         screenMetrics = new DisplayMetrics();
         // 切换到前台服务
-        SystemUtils.switchToForeground(this, FOREGROUND_ID);
+        switchToForeground();
         ocrFloatViewManager = new OCRFloatViewManager(getApplicationContext());
         mediaProjectionManager = (MediaProjectionManager) getSystemService(MEDIA_PROJECTION_SERVICE);
         preferences = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
@@ -76,6 +78,28 @@ public class OCRService extends Service {
         ocrFloatViewManager.showFloatButton(this::startCapture);
     }
 
+    /**
+     * 将服务切换成前台服务
+     */
+    private void switchToForeground() {
+        NotificationManager mNotificationManager =
+                (NotificationManager) this.getSystemService(Context.NOTIFICATION_SERVICE);
+        Intent stopTile = new Intent(this, OCRTile.class).setFlags(OCRTile.STOP_FLAG);
+        PendingIntent pendingIntent =
+                PendingIntent.getService(this, 0, stopTile, 0);
+        NotificationChannel channel = new NotificationChannel(this.getString(R.string.foreNotificationChannelId),
+                this.getString(R.string.foreNotificationChannelName),
+                NotificationManager.IMPORTANCE_DEFAULT);
+        channel.setDescription(this.getString(R.string.foreNotificationChannelDesc));
+        mNotificationManager.createNotificationChannel(channel);
+        Notification notification = new Notification.Builder(this, this.getString(R.string.foreNotificationChannelId))
+                .setContentTitle(getString(R.string.OCR_ACTIVIED))
+                .setContentText(getString(R.string.CLICK_STOP_OCR))
+                .setSmallIcon(R.drawable.ic_launcher_round)
+                .setContentIntent(pendingIntent)
+                .build();
+        this.startForeground(FOREGROUND_ID, notification);
+    }
 
     /**
      * 请求截图权限
@@ -91,7 +115,7 @@ public class OCRService extends Service {
      */
     @SuppressLint("WrongConstant")
     private void startCapture() {
-        windowManager.getDefaultDisplay().getRealMetrics(screenMetrics);
+        this.getDisplay().getRealMetrics(screenMetrics);
         imageReader = ImageReader.newInstance(screenMetrics.widthPixels, screenMetrics.heightPixels, PixelFormat.RGBA_8888, 1);
         surface = imageReader.getSurface();
         rect = CaptureView.getCaptureRect(PreferenceManager.getDefaultSharedPreferences(getBaseContext()));
