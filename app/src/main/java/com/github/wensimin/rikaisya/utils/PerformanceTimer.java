@@ -2,6 +2,7 @@ package com.github.wensimin.rikaisya.utils;
 
 /**
  * 性能计时器
+ * 简易实现，调试用。只支持全局单一计时器
  */
 public class PerformanceTimer {
     private long lastTime;
