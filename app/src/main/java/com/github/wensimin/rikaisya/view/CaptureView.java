@@ -257,6 +257,10 @@ public class CaptureView extends View {
      * @param move     需要移动的量
      */
     private void multipleTapResize(TouchAdapter.PointPosition position, float move) {
+        // 实际运行中似乎有莫名空针,先进行处理
+        if (position == null) {
+            return;
+        }
         switch (position) {
             case top:
                 top += move;
