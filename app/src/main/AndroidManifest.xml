@@ -7,7 +7,6 @@
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
 
     <application
-        android:allowBackup="false"
         android:icon="@drawable/ic_launcher_round"
         android:label="@string/app_name"
         android:roundIcon="@drawable/ic_launcher_round"
@@ -23,7 +22,7 @@
             android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" />
         <activity
             android:name=".activity.MainActivity"
-            android:label="@string/app_name"
+            android:exported="true"
             android:launchMode="singleTask"
             android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
@@ -35,9 +34,12 @@
         <service
             android:name=".service.RikaiFloatingService"
             android:exported="false" />
-        <service android:name=".service.OCRService" />
+        <service
+            android:name=".service.OCRService"
+            android:foregroundServiceType="mediaProjection" />
         <service
             android:name=".service.OCRTile"
+            android:exported="true"
             android:icon="@drawable/ocr_setting"
             android:label="@string/ocr_quick"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
@@ -47,6 +49,7 @@
         </service>
         <service
             android:name=".service.RikaiTile"
+            android:exported="true"
             android:icon="@drawable/quick_setting"
             android:label="@string/rikai_quick"
             android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">

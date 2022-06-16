@@ -40,6 +40,7 @@ dependencies {
     // 百度 ocr
     implementation 'com.baidu.aip:java-sdk:4.15.3'
     // 腾讯翻译
+// https://mvnrepository.com/artifact/com.tencentcloudapi/tencentcloud-sdk-java
     implementation 'com.tencentcloudapi:tencentcloud-sdk-java:4.0.11'
     implementation group: 'xerces', name: 'xercesImpl', version: '2.12.1'
     implementation 'androidx.preference:preference-ktx:1.2.0'
@@ -51,5 +52,5 @@ dependencies {
 
 }
 repositories {
-    mavenCentral()
+    jcenter()
 }

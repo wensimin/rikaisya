@@ -44,7 +44,7 @@ import static com.github.wensimin.rikaisya.service.OCRResultViewManager.ACCURATE
 public class OCRService extends Service {
     private static final int FOREGROUND_ID = 1;
     private OCRFloatViewManager ocrFloatViewManager;
-    private DisplayMetrics screenMetrics;
+    private Rect screenRect;
     private MediaProjectionManager mediaProjectionManager;
     private Rect rect;
     private ImageReader imageReader;
@@ -62,7 +62,6 @@ public class OCRService extends Service {
 
     @Override
     public void onCreate() {
-        screenMetrics = new DisplayMetrics();
         // 切换到前台服务
         switchToForeground();
         ocrFloatViewManager = new OCRFloatViewManager(getApplicationContext());
@@ -100,11 +99,11 @@ public class OCRService extends Service {
      */
     @SuppressLint("WrongConstant")
     private void startCapture() {
-        this.getDisplay().getRealMetrics(screenMetrics);
-        imageReader = ImageReader.newInstance(screenMetrics.widthPixels, screenMetrics.heightPixels, PixelFormat.RGBA_8888, 1);
+        screenRect = SystemUtils.getScreenRect(this);
+        imageReader = ImageReader.newInstance(screenRect.width(), screenRect.height(), PixelFormat.RGBA_8888, 1);
         surface = imageReader.getSurface();
         rect = CaptureView.getCaptureRect(PreferenceManager.getDefaultSharedPreferences(getBaseContext()));
-        if (checkIsOver(screenMetrics, rect)) {
+        if (checkIsOver(screenRect, rect)) {
             Toast.makeText(this, "区域无效,请重新截取", Toast.LENGTH_SHORT).show();
             return;
         }
@@ -115,7 +114,7 @@ public class OCRService extends Service {
         }
         new Thread(() -> {
             VirtualDisplay virtualDisplay = mediaProjection.createVirtualDisplay("screen-mirror",
-                    screenMetrics.widthPixels, screenMetrics.heightPixels, screenMetrics.densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
+                    screenRect.width(), screenRect.height(), getResources().getDisplayMetrics().densityDpi, DisplayManager.VIRTUAL_DISPLAY_FLAG_AUTO_MIRROR,
                     surface, null, null);
             isCaptured = false;
             imageReader.setOnImageAvailableListener(reader -> {
@@ -155,8 +154,8 @@ public class OCRService extends Service {
     }
 
 
-    private boolean checkIsOver(DisplayMetrics screenMetrics, Rect rect) {
-        return rect.left < 0 || rect.right > screenMetrics.widthPixels || rect.top < 0 || rect.bottom > screenMetrics.heightPixels;
+    private boolean checkIsOver(Rect screenMetrics, Rect rect) {
+        return rect.left < 0 || rect.right > screenMetrics.width() || rect.top < 0 || rect.bottom > screenMetrics.height();
     }
 
 

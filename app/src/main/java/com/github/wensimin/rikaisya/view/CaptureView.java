@@ -78,9 +78,9 @@ public class CaptureView extends View {
         preferences = PreferenceManager.getDefaultSharedPreferences(getContext());
         linePaint = new Paint();
         linePaint.setColor(Color.RED);
-        DisplayMetrics point = SystemUtils.getScreenMetrics(getContext());
-        int width = point.widthPixels;
-        int height = point.heightPixels;
+        Rect point = SystemUtils.getScreenRect(getContext());
+        int width = point.width();
+        int height = point.height() - SystemUtils.getStatusBarHeight(getContext());
         left = preferences.getFloat(CAP_LEFT_KEY, width / 2f - DEFAULT_LINE_LENGTH);
         right = preferences.getFloat(CAP_RIGHT_KEY, width / 2f + DEFAULT_LINE_LENGTH);
         top = preferences.getFloat(CAP_TOP_KEY, height / 2f - DEFAULT_LINE_LENGTH / 2f);

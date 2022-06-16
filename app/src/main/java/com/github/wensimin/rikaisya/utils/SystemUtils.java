@@ -8,23 +8,24 @@ import android.app.Service;
 import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
+import android.graphics.Insets;
+import android.graphics.Rect;
 import android.util.DisplayMetrics;
 import android.view.View;
+import android.view.WindowInsets;
 import android.view.WindowManager;
+import android.view.WindowMetrics;
 
 import com.github.wensimin.rikaisya.R;
 import com.github.wensimin.rikaisya.service.SwitchTile;
 
 public class SystemUtils {
 
-    public static DisplayMetrics getScreenMetrics(Context context) {
-        DisplayMetrics displayMetrics = new DisplayMetrics();
-        context.getDisplay().getRealMetrics(displayMetrics);
-        if (SystemUtils.showNavigationBar(context.getResources())) {
-            int navigationBarHeight = SystemUtils.getNavigationBarHeight(context);
-            displayMetrics.heightPixels -= navigationBarHeight;
-        }
-        return displayMetrics;
+
+    public static Rect getScreenRect(Context context) {
+        WindowMetrics windowMetrics = context.getSystemService(WindowManager.class).getCurrentWindowMetrics();
+        return windowMetrics.getBounds();
+
     }
 
     public static int getStatusBarHeight(Resources resources) {
@@ -36,22 +37,12 @@ public class SystemUtils {
         return statusBarHeight;
     }
 
-    public static boolean showNavigationBar(Resources resources) {
-        int id = resources.getIdentifier("config_showNavigationBar", "bool", "android");
-        return id > 0 && resources.getBoolean(id);
-    }
 
-    public static int getNavigationBarHeight(Context context) {
-        DisplayMetrics metrics = new DisplayMetrics();
-        context.getDisplay().getRealMetrics(metrics);
-        int usableHeight = metrics.heightPixels;
-        // 使用高度差求导航栏高度
-        context.getDisplay().getRealMetrics(metrics);
-        int realHeight = metrics.heightPixels;
-        if (realHeight > usableHeight)
-            return realHeight - usableHeight;
-        else
-            return 0;
+    public static int getStatusBarHeight(Context context) {
+        WindowMetrics windowMetrics = context.getSystemService(WindowManager.class).getCurrentWindowMetrics();
+        Insets insets = windowMetrics.getWindowInsets()
+                .getInsetsIgnoringVisibility(WindowInsets.Type.systemBars());
+        return insets.left + insets.right;
     }
 
     /**
@@ -94,7 +85,7 @@ public class SystemUtils {
                 (NotificationManager) service.getSystemService(Context.NOTIFICATION_SERVICE);
         Intent stopTile = new Intent(service, switchTileClass).setFlags(SwitchTile.STOP_FLAG);
         PendingIntent pendingIntent =
-                PendingIntent.getService(service, 0, stopTile, 0);
+                PendingIntent.getService(service, 0, stopTile, PendingIntent.FLAG_IMMUTABLE);
         NotificationChannel channel = new NotificationChannel(service.getString(R.string.foreNotificationChannelId),
                 service.getString(R.string.foreNotificationChannelName),
                 NotificationManager.IMPORTANCE_DEFAULT);

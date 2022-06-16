@@ -21,7 +21,7 @@ abstract class SwitchTile : TileService() {
     override fun onClick() {
         super.onClick()
         // 关闭状态栏
-        applicationContext.sendBroadcast(Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
+//        applicationContext.sendBroadcast(Intent(Intent.ACTION_CLOSE_SYSTEM_DIALOGS))
         // 反转状态
         val state = if (qsTile.state == Tile.STATE_ACTIVE) Tile.STATE_INACTIVE else Tile.STATE_ACTIVE
         qsTile.state = state
